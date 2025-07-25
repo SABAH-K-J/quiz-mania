@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz Created! - Quizzo{% endblock %}
+
+{% block content %}
+<!-- 🟢 Added main-content class to avoid navbar overlap -->
+<div class="container main-content d-flex justify-content-center align-items-center mt-5">
+  <div class="box text-center">
+    <h2>🎉 Quiz Created Successfully!</h2>
+    <p><strong>Quiz Title:</strong> {{ quiz.title }}</p>
+    <p><strong>Share this code with players:</strong></p>
+    <div id="quiz-code" class="code">{{ quiz.code }}</div>
+    <button onclick="copyCode()" class="btn-copy mt-3">Copy Code</button>
+    <br>
+    <a href="{% url 'dashboard' %}" class="btn btn-dashboard mt-3">Go to Dashboard</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  body {
+    background-color: #f7f9fc;
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+  }
+
+  .box {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    max-width: 500px;
+    width: 100%;
+  }
+
+  h2 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .code {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #8a4de8;
+    margin: 15px 0;
+    letter-spacing: 2px;
+    background: #f1edfb;
+    padding: 10px 20px;
+    border-radius: 12px;
+    display: inline-block;
+  }
+
+  .btn-copy {
+    background-color: #8a4de8;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    font-weight: 600;
+    border-radius: 30px;
+    transition: all 0.2s ease;
+  }
+
+  .btn-copy:hover {
+    background-color: #7138c3;
+  }
+
+  .btn-dashboard {
+    background-color: #f4f4f4;
+    color: #4c1d95;
+    border: none;
+    padding: 10px 25px;
+    font-weight: 600;
+    border-radius: 30px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s ease;
+  }
+
+  .btn-dashboard:hover {
+    background-color: #e8e8e8;
+    text-decoration: none;
+    color: #4c1d95;
+  }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function copyCode() {
+    const code = document.getElementById("quiz-code").innerText;
+    navigator.clipboard.writeText(code);
+    alert("Code copied to clipboard!");
+  }
+</script>
+{% endblock %}

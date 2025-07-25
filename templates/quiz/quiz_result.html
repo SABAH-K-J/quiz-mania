@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- 🟣 Fixed content positioning below navbar -->
+<div class="container main-content mt-5 text-center">
+  <h3 class="mb-4">🎉 You completed: <strong>{{ quiz.title }}</strong></h3>
+  <p><strong>Score:</strong> {{ score }} / {{ total }}</p>
+  <p><strong>Percentage:</strong> {{ percentage }}%</p>
+  <a href="{% url 'dashboard' %}" class="btn btn-primary mt-4 px-4 py-2 rounded-pill">Back to Dashboard</a>
+</div>
+{% endblock %}

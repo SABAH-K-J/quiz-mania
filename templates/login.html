@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block extra_head %}
+<!-- Page-specific styling -->
+<style>
+  body {
+    background-color: #f7f9fc; 
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .login-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .login-header {
+    font-weight: 600;
+    color: #343a40;
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  .login-form {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .form-field {
+    margin-bottom: 1.5rem;
+  }
+
+  label {
+    display: block;
+    color: #343a40;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  input {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 0.75rem;
+    color: #212529;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: #8a4de8;
+    box-shadow: 0 0 0 3px rgba(138, 77, 232, 0.2);
+  }
+
+  input::placeholder {
+    color: #adb5bd;
+  }
+
+  .submit-btn {
+    background: linear-gradient(135deg, #8a4de8, #7138c3);
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    border-radius: 30px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .submit-btn:hover {
+    background: linear-gradient(135deg, #9f6bff, #8850e3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+  }
+
+  .register-link {
+    margin-top: 1.5rem;
+    text-align: center;
+  }
+
+  .register-link p {
+    color: #343a40;
+    font-size: 0.9rem;
+  }
+
+  .register-link a {
+    color: #8a4de8;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .register-link a:hover {
+    color: #b392f0;
+    text-decoration: underline;
+  }
+
+  .alert-danger {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    padding: 10px 15px;
+    margin-bottom: 1rem;
+  }
+
+  .text-red-400 {
+    color: #f28b82;
+  }
+
+  @media (max-width: 768px) {
+    .login-header {
+      font-size: 1.5rem;
+    }
+
+    .login-form {
+      padding: 1.5rem;
+    }
+
+    input {
+      padding: 0.6rem;
+      font-size: 0.85rem;
+    }
+
+    .submit-btn {
+      padding: 0.6rem 1.2rem;
+      font-size: 0.85rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+  <h2 class="login-header">Login</h2>
+
+  <form method="POST" class="login-form">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">
+        {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% for field in form %}
+      <div class="form-field">
+        {{ field.label_tag }} {{ field }}
+        {% if field.errors %}
+          <div class="text-red-400 text-sm mt-1">{{ field.errors }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <button type="submit" class="submit-btn">Login</button>
+  </form>
+
+  <div class="register-link">
+    <p>Don't have an account? <a href="{% url 'register' %}">Register</a></p>
+  </div>
+</div>
+{% endblock %}

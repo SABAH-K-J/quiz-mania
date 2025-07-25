@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container main-content mt-5 d-flex justify-content-center">
+  <div class="card p-4 shadow-sm" style="max-width: 500px; width: 100%; border-radius: 20px;">
+    <h3 class="mb-3 text-center">🎮 Join a Quiz</h3>
+    <form method="POST">
+      {% csrf_token %}
+      <input type="text" name="code" class="form-control mb-3" placeholder="Enter Quiz Code" required>
+      <button class="btn btn-quizzo w-100 rounded-pill">Join</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .btn-quizzo {
+    background: linear-gradient(135deg, #8a4de8, #7138c3);
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .btn-quizzo:hover {
+    background: linear-gradient(135deg, #9f6bff, #8850e3);
+    box-shadow: 0 4px 12px rgba(138, 77, 232, 0.3);
+    transform: translateY(-2px);
+  }
+</style>
+{% endblock %}

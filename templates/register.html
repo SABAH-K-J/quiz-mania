@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Set dark background for the entire page */
+    body {
+        background-color: #f7f9fc;
+    }
+
+    .register-container {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+    }
+
+    .register-header {
+        font-weight: 600;
+        color: #000000;
+        font-size: 1.75rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #495057;
+        text-align: center;
+    }
+
+    .register-form {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    .register-form .form-field {
+        margin-bottom: 1.5rem;
+    }
+
+    .register-form label {
+        display: block;
+        color: #000000;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .register-form input {
+        width: 100%;
+        background: #f7f9fc;
+        border: 1px solid #6c757d;
+        border-radius: 8px;
+        padding: 0.75rem;
+        color: #000000;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .register-form input:focus {
+        outline: none;
+        border-color: #8a4de880;
+        box-shadow: 0 0 0 3px #8a4de880;
+    }
+
+    .register-form input::placeholder {
+        color: #adb5bd;
+    }
+
+    .register-form .submit-btn {
+        background: linear-gradient(135deg, #8a4de880, #8b4de8);
+        color: #f8f9fa;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        width: 100%;
+        text-align: center;
+    }
+
+    .register-form .submit-btn:hover {
+        background: linear-gradient(135deg, #230156e0, #23015695);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .login-link {
+        margin-top: 1.5rem;
+        text-align: center;
+    }
+
+    .login-link p {
+        color: #000000;
+        font-size: 0.9rem;
+        font-weight: 400;
+    }
+
+    .login-link a {
+        color: #1e90ff;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .login-link a:hover {
+        color: #63b3ed;
+        text-decoration: underline;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .register-header {
+            font-size: 1.5rem;
+        }
+
+        .register-form {
+            padding: 1.5rem;
+        }
+
+        .register-form input {
+            padding: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .register-form .submit-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .login-link p {
+            font-size: 0.85rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <h2 class="register-header">Register</h2>
+
+    <form method="POST" class="register-form">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-field">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                    <div class="text-red-400 text-sm mt-1">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="submit-btn">Register</button>
+    </form>
+    <div class="login-link">
+        <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+    </div>
+</div>
+{% endblock %}

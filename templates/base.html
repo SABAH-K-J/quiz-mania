@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}Quizzo - Online Quiz App{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+
+    <style>
+      html, body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f7f9fc;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        scroll-behavior: smooth;
+      }
+
+      /* Translucent Navbar with Purple Tint */
+      .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 999;
+        padding: 15px 0;
+        background-color: #8a4de880; /* 💜 translucent purple */
+        color: white;
+        backdrop-filter: blur(12px); /* frosted glass effect */
+        -webkit-backdrop-filter: blur(12px);
+        transition: all 0.3s ease;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .navbar.scrolled {
+        background-color: rgba(138, 77, 232, 0.8); /* a bit more solid on scroll */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .navbar-brand {
+        font-size: 2rem;
+        font-weight: 900;
+        color: white !important;
+        text-decoration: none;
+      }
+
+      .navbar-nav .nav-link {
+        color: white !important;
+        font-weight: 600;
+        margin: 0 15px;
+        transition: all 0.3s ease;
+      }
+
+      .navbar-nav .nav-link:hover {
+        color: #FFE066 !important;
+        transform: translateY(-2px);
+      }
+
+      .btn-login {
+        background: rgba(255, 255, 255, 0.2);
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 25px;
+        padding: 8px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .btn-login:hover {
+        background: white;
+        color: #8a4de8 !important;
+        transform: translateY(-2px);
+      }
+
+      .main-content {
+        padding-top: 90px;
+        padding-bottom: 30px;
+        min-height: calc(100vh - 140px);
+      }
+
+      /* Translucent Footer with Purple Tint */
+      footer.footer {
+        border-top: 1px solid #ddd;
+        background-color: rgba(138, 77, 232, 0.5); /* 💜 translucent purple */
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        color: white;
+        font-size: 0.875rem;
+      }
+
+      .btn-logout {
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        color: #8a4de8;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .btn-logout:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 991px) {
+        .navbar-nav {
+          margin-top: 1rem;
+        }
+      }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+  </head>
+
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
+      <div class="container">
+        {% if user.is_authenticated %}
+          <a class="navbar-brand" href="{% url 'dashboard' %}">
+            <i class="bi bi-lightbulb-fill me-2"></i>Quizzo
+          </a>
+        {% else %}
+          <a class="navbar-brand" href="{% url 'index' %}">
+            <i class="bi bi-lightbulb-fill me-2"></i>Quizzo
+          </a>
+        {% endif %}
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          {% if user.is_authenticated %}
+            <ul class="navbar-nav me-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'create_quiz' %}"><i class="bi bi-plus-circle me-1"></i>Create Quiz</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'hosted_quizzes' %}"><i class="bi bi-journal-text me-1"></i>Your Quizzes</a>
+              </li>
+            </ul>
+
+            <ul class="navbar-nav">
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                  <i class="bi bi-person-circle me-1"></i>{{ user.username }}
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li class="dropdown-item">Logged in as <strong>{{ user.username }}</strong></li>
+                  <li><hr class="dropdown-divider" /></li>
+                  <li>
+                    <form method="post" action="{% url 'logout' %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn-logout"><i class="bi bi-box-arrow-right me-1"></i>Logout</button>
+                    </form>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          {% else %}
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'login' %}">
+                  <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                </a>
+              </li>
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    {% block main_content %}
+    <div class="container main-content py-4">
+      {% block content %}{% endblock %}
+    </div>
+    {% endblock %}
+
+    <!-- Footer -->
+    <footer class="footer text-center py-3">
+      <div class="container">
+        <span class="small">© 2025 Quizzo. All Rights Reserved</span>
+      </div>
+    </footer>
+
+    <!-- Bootstrap + Navbar Scroll Script -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Toggle .scrolled class when user scrolls down
+      window.addEventListener('scroll', () => {
+        const navbar = document.querySelector('.navbar');
+        if (window.scrollY > 10) {
+          navbar.classList.add('scrolled');
+        } else {
+          navbar.classList.remove('scrolled');
+        }
+      });
+    </script>
+    {% block extra_scripts %}{% endblock %}
+  </body>
+</html>

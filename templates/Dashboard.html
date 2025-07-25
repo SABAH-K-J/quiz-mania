@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Quizzo{% endblock %}
+
+{% block content %}
+<div class="container main-content">
+  <h2 class="mb-3 text-center">👋 Welcome, {{ request.user.username }}!</h2>
+
+  <!-- Themed Buttons Below Welcome -->
+  <div class="row justify-content-center mb-4 g-3">
+    <div class="col-md-6 d-grid">
+      <a href="{% url 'create_quiz' %}" class="btn btn-create w-100 rounded-pill px-4 py-2">➕ Create Quiz</a>
+    </div>
+    <div class="col-md-6 d-grid">
+      <a href="{% url 'join_quiz' %}" class="btn btn-join w-100 rounded-pill px-4 py-2">🎮 Join Quiz</a>
+    </div>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="row mb-4 g-4 text-center">
+    <div class="col-md-6">
+      <div class="card stat-card shadow-sm border-0 rounded-4 p-3">
+        <h5 class="text-muted">Quizzes Created</h5>
+        <h3 class="text-theme">{{ created_quizzes|length }}</h3>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card stat-card shadow-sm border-0 rounded-4 p-3">
+        <h5 class="text-muted">Quizzes Played</h5>
+        <h3 class="text-theme">{{ attended_quizzes|length }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quiz Lists -->
+  <div class="row mb-5">
+    <!-- Created -->
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm rounded-4 p-3">
+        <h5 class="mb-3 text-theme">📘 Your Created Quizzes</h5>
+        {% if created_quizzes %}
+          <ul class="list-group list-group-flush">
+            {% for quiz in created_quizzes|slice:":5" %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ quiz.title }}
+                <small class="text-muted">{{ quiz.created_at|date:"M d, Y" }}</small>
+              </li>
+            {% endfor %}
+          </ul>
+          <div class="text-end mt-2">
+            <a href="{% url 'hosted_quizzes' %}" class="btn btn-sm btn-outline-theme rounded-pill">View All</a>
+          </div>
+        {% else %}
+          <p class="text-muted">No quizzes hosted yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Played -->
+    <!-- Played -->
+<div class="col-md-6">
+  <div class="card border-0 shadow-sm rounded-4 p-3">
+    <h5 class="mb-3 text-theme">🧠 Quizzes You've Played</h5>
+    {% if attended_quizzes %}
+      <ul class="list-group list-group-flush">
+        {% for result in attended_quizzes|slice:":5" %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ result.quiz.title }}
+            <small class="text-muted">
+              {% widthratio result.score result.total_questions 100 %}%
+            </small>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted">You haven't played any quizzes yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .text-theme {
+    color: #8a4de8;
+  }
+
+  .btn-create {
+    background: linear-gradient(135deg, #8a4de8, #7138c3);
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+  }
+
+  .btn-create:hover {
+    background: linear-gradient(135deg, #9f6bff, #8850e3);
+    box-shadow: 0 4px 12px rgba(138, 77, 232, 0.3);
+  }
+
+  .btn-join {
+    background-color: transparent;
+    color: #8a4de8;
+    font-weight: 600;
+    border: 2px solid #8a4de8;
+    transition: all 0.3s ease;
+  }
+
+  .btn-join:hover {
+    background-color: #8a4de8;
+    color: white;
+    box-shadow: 0 4px 12px rgba(138, 77, 232, 0.2);
+  }
+
+  .btn-outline-theme {
+    color: #8a4de8;
+    border: 1px solid #8a4de8;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .btn-outline-theme:hover {
+    background-color: #8a4de8;
+    color: white;
+  }
+
+  .stat-card h3 {
+    font-size: 2rem;
+    margin-top: 0.5rem;
+  }
+</style>
+{% endblock %}

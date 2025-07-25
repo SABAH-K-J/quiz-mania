@@ -1,0 +1,58 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.sqlite3
+
+# Django Stuff
+*.log
+*.pot
+*.py[cod]
+*.db
+*.sqlite3
+*.mo
+*.pickle
+*.swp
+
+# Env & Secrets
+.env
+*.env
+*.secret
+*.key
+.env.*
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+.virtualenv/
+
+# VS Code / IDE settings
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+
+
+# Static & Media (optional — depends on setup)
+staticfiles/
+media/
+
+# Coverage reports
+htmlcov/
+.coverage
+coverage.xml
+
+# Pytest cache
+.pytest_cache/
+
+# Other
+*.bak
+*.orig
