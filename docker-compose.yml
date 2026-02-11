@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: quizmania-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./media:/app/media
+      - ./db.sqlite3:/app/db.sqlite3
+    environment:
+      - DEBUG=False
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend
+      - SECRET_KEY=your-secret-key-change-in-production
+    networks:
+      - quizmania
+
+  frontend:
+    build: ./client
+    container_name: quizmania-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - quizmania
+
+networks:
+  quizmania:
+    driver: bridge

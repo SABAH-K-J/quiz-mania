@@ -1,7 +1,94 @@
+# Quiz Mania 🎯
 
-# 🧠 Quiz Mania
+A modern, full-stack quiz application built with Django REST Framework and React. Create interactive quizzes, track results, and analyze performance with comprehensive analytics.
 
-**Quiz Mania** is a simple Django-based web application that lets users create quizzes, play them, and view evaluation results. Built as a fun test project to explore Django’s capabilities, it supports multiple users and uses Django’s built-in authentication system.
+![Django](https://img.shields.io/badge/Django-5.2.11-green)
+![React](https://img.shields.io/badge/React-18-blue)
+![DRF](https://img.shields.io/badge/DRF-3.16.1-orange)
+
+## ✨ Features
+
+### For Quiz Creators
+- 🎨 **Dynamic Quiz Builder** - Create quizzes with 2-6 answer options per question
+- 📊 **Analytics Dashboard** - View detailed statistics on who took your quiz
+- 🏆 **Leaderboards** - See top performers with rankings and scores
+- ⏱️ **Time Limits** - Set optional time limits for quizzes
+- 📂 **Categories** - Organize quizzes by subject
+- 🔒 **Draft Mode** - Save and edit before publishing
+
+### For Quiz Takers
+- 🎮 **Interactive Quiz Player** - Real-time countdown timer
+- 📈 **Personal Analytics** - Track your performance over time
+- 🏅 **Performance Metrics** - Grade emojis, score trends, and charts
+- 🔄 **Retake Options** - Practice makes perfect
+
+### Technical Features
+- 🔐 **JWT Authentication** - Secure token-based auth with refresh tokens
+- 🌐 **RESTful API** - Clean, well-documented API endpoints
+- 🎨 **Modern UI** - Built with Tailwind CSS
+- 🐳 **Docker Ready** - Containerized deployment setup
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.8+
+- Node.js 16+
+- npm or yarn
+
+### Backend Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/quiz-mania.git
+cd quiz-mania
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run migrations
+python manage.py migrate
+
+# Start Django server
+python manage.py runserver
+```
+
+Backend will run on `http://127.0.0.1:8000`
+
+### Frontend Setup
+
+```bash
+# Navigate to client directory
+cd client
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+Frontend will run on `http://localhost:5173`
+
+## 🎮 Usage
+
+### Creating a Quiz
+1. Register/Login to your account
+2. Click "Create Quiz" in the navigation
+3. Fill in quiz details and add questions
+4. Save as draft or publish immediately
+
+### Taking a Quiz
+1. Get the quiz code from the creator
+2. Click "Join a Quiz" and enter the code
+3. Answer questions and view your results
+
+### Viewing Analytics
+- **Creators**: Dashboard → Click the purple chart icon on your quiz
+- **Takers**: Navbar → "My Results"
 
 ---
 
