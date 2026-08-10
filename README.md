@@ -26,7 +26,7 @@ A modern, full-stack quiz application built with Django REST Framework and React
 - 🔐 **JWT Authentication** - Secure token-based auth with refresh tokens
 - 🌐 **RESTful API** - Clean, well-documented API endpoints
 - 🎨 **Modern UI** - Built with Tailwind CSS
-- 🐳 **Docker Ready** - Containerized deployment setup
+- 🐳 **Docker Ready** - Containerized deployment setup 
 
 ## 🚀 Quick Start
 
