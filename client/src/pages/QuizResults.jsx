@@ -1,22 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import {
-  ArrowLeft,
-  BarChart3,
-  Calendar,
-  ClipboardCopy,
-  Clock3,
-  Gamepad2,
-  Medal,
-  Pencil,
-  Share2,
-  Target,
-  Trophy,
-  Users,
-} from 'lucide-react'
+import { ArrowLeft, ClipboardCopy, Gamepad2, Pencil, Share2, Users } from 'lucide-react'
 import { getErrorMessage, quizAPI } from '../services/api'
 import useSEO from '../hooks/useSEO'
-import { Alert, EmptyState, PageHeader, Spinner, StatCard } from '../components/ui'
+import { Alert, EmptyState, PageHeader, ScoreDigits, Spinner, StatStrip } from '../components/ui'
 
 function formatDate(value) {
   if (!value) return '—'
@@ -34,6 +21,12 @@ const SORTS = [
   { value: 'score', label: 'Highest score' },
   { value: 'date', label: 'Most recent' },
   { value: 'time', label: 'Fastest time' },
+]
+
+const PODIUM = [
+  { order: 'order-1 sm:order-2', surface: 'bg-ink text-white', label: 'text-signal-yellow', min: 'sm:min-h-[196px]' },
+  { order: 'order-2 sm:order-1', surface: 'bg-arena-50 text-ink', label: 'text-ink-400', min: 'sm:min-h-[160px]' },
+  { order: 'order-3 sm:order-3', surface: 'bg-signal-yellow-soft text-ink', label: 'text-signal-yellow-dark', min: 'sm:min-h-[136px]' },
 ]
 
 export default function QuizResults() {
@@ -110,10 +103,10 @@ export default function QuizResults() {
 
   if (error && !quiz) {
     return (
-      <main className="container-page py-16">
-        <div className="mx-auto max-w-lg">
+      <main className="container-page py-12">
+        <div className="mx-auto max-w-lg border-2 border-ink bg-white p-6">
           <Alert tone="error">{error}</Alert>
-          <Link to="/dashboard" className="btn-secondary mt-5">
+          <Link to="/dashboard" className="btn btn-secondary mt-5">
             <ArrowLeft size={17} aria-hidden="true" /> Back to dashboard
           </Link>
         </div>
@@ -123,60 +116,83 @@ export default function QuizResults() {
 
   if (!quiz) return null
 
+  const podium = sorted.slice(0, 3)
+  const podiumOrder = [podium[1], podium[0], podium[2]].filter(Boolean)
+
   return (
-    <main className="container-page animate-fade-in py-10 sm:py-14">
+    <main className="container-page py-8 sm:py-12">
       <PageHeader
-        eyebrow="Creator analytics"
+        meta={
+          <>
+            <span className="badge status-quiet">Creator analytics</span>
+            <span className="font-display text-[11px] font-bold uppercase tracking-[0.16em] text-ink-600">
+              {quiz.category} / {quiz.status}
+            </span>
+          </>
+        }
         title={quiz.title}
         description={quiz.description || 'Every attempt on this quiz, sorted however you need.'}
         actions={
           <>
-            <Link to={`/quiz/edit/${quiz.id}`} className="btn-secondary">
-              <Pencil size={17} aria-hidden="true" /> Edit quiz
+            <Link to={`/quiz/edit/${quiz.id}`} className="btn btn-secondary">
+              <Pencil size={16} aria-hidden="true" /> Edit quiz
             </Link>
             <button
               type="button"
               onClick={() => copy(`${window.location.origin}/quiz/play/${quiz.code}`, 'Share link copied.')}
-              className="btn-primary"
+              className="btn btn-primary"
             >
-              <Share2 size={17} aria-hidden="true" /> Share quiz
+              <Share2 size={16} aria-hidden="true" /> Share quiz
             </button>
           </>
         }
       />
 
       {notice && (
-        <Alert className="mb-6" tone="success">
-          {notice}
-        </Alert>
+        <div className="mb-6">
+          <Alert tone="success">{notice}</Alert>
+        </div>
       )}
       {error && (
-        <Alert className="mb-6" tone="error">
-          {error}
-        </Alert>
+        <div className="mb-6">
+          <Alert tone="error">{error}</Alert>
+        </div>
       )}
 
-      <section className="surface flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-wider text-slate-500">Quiz code</p>
-          <p className="mt-1 font-mono text-2xl font-bold tracking-[0.3em] text-secondary-200">{quiz.code}</p>
+      <section className="border-2 border-ink bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b-2 border-ink bg-ink px-4 py-2.5 text-white">
+          <span className="font-display text-[11px] font-bold uppercase tracking-[0.18em]">Quiz code</span>
+          <span className="font-display text-[11px] font-bold uppercase tracking-[0.16em] text-signal-yellow">
+            Share this to let people play
+          </span>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => copy(quiz.code, 'Quiz code copied.')} className="btn-secondary">
-            <ClipboardCopy size={16} aria-hidden="true" /> Copy code
-          </button>
-          <Link to={`/quiz/play/${quiz.code}`} className="btn-secondary">
-            <Gamepad2 size={16} aria-hidden="true" /> Preview quiz
-          </Link>
+        <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <ScoreDigits value={quiz.code} size="sm" label={`Quiz code ${quiz.code}`} />
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => copy(quiz.code, 'Quiz code copied.')}
+              className="btn btn-secondary btn-sm"
+            >
+              <ClipboardCopy size={15} aria-hidden="true" /> Copy code
+            </button>
+            <Link to={`/quiz/play/${quiz.code}`} className="btn btn-secondary btn-sm">
+              <Gamepad2 size={15} aria-hidden="true" /> Preview quiz
+            </Link>
+          </div>
         </div>
       </section>
 
-      <section aria-label="Quiz stats" className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={Users} label="Attempts" value={stats.attempts} />
-        <StatCard icon={BarChart3} label="Average score" value={`${stats.average}%`} accent="text-accent-teal" />
-        <StatCard icon={Trophy} label="Top score" value={`${stats.best}%`} accent="text-secondary-300" />
-        <StatCard icon={Target} label="Questions" value={quiz.question_count ?? quiz.questions?.length ?? 0} />
-      </section>
+      <div className="mt-4">
+        <StatStrip
+          items={[
+            { label: 'Attempts', value: stats.attempts, note: 'Submitted plays' },
+            { label: 'Average score', value: `${stats.average}%`, tone: 'text-signal-blue' },
+            { label: 'Top score', value: `${stats.best}%`, tone: 'text-signal-green' },
+            { label: 'Questions', value: quiz.question_count ?? quiz.questions?.length ?? 0 },
+          ]}
+        />
+      </div>
 
       {results.length === 0 ? (
         <div className="mt-8">
@@ -185,7 +201,7 @@ export default function QuizResults() {
             title="No attempts yet"
             description={`Share code ${quiz.code} so people can play. Results show up here the moment someone submits.`}
             action={
-              <button type="button" onClick={() => copy(quiz.code, 'Quiz code copied.')} className="btn-primary">
+              <button type="button" onClick={() => copy(quiz.code, 'Quiz code copied.')} className="btn btn-primary">
                 <ClipboardCopy size={18} aria-hidden="true" /> Copy the code
               </button>
             }
@@ -193,114 +209,126 @@ export default function QuizResults() {
         </div>
       ) : (
         <>
-          {sortBy === 'score' && sorted.length >= 3 && (
-            <section className="mt-8 grid gap-3 sm:grid-cols-3" aria-label="Top three players">
-              {sorted.slice(0, 3).map((result, index) => {
-                const tones = ['text-secondary-300', 'text-slate-200', 'text-amber-500']
-                return (
-                  <div
-                    key={result.id}
-                    className={`surface p-5 ${
-                      index === 0 ? 'border-secondary-400/30 bg-secondary-400/[0.06]' : ''
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className={`inline-flex items-center gap-1.5 text-sm font-bold ${tones[index]}`}>
-                        <Medal size={17} aria-hidden="true" /> #{index + 1}
-                      </span>
-                      <span className="text-xs text-slate-500">
-                        {Math.round(Number(result.percentage || 0))}%
-                      </span>
+          {sortBy === 'score' && podium.length >= 3 && (
+            <section className="mt-8 border-2 border-ink bg-white" aria-label="Top three players">
+              <div className="flex items-center justify-between gap-3 border-b-2 border-ink bg-ink px-4 py-2.5 text-white">
+                <span className="font-display text-[11px] font-bold uppercase tracking-[0.18em]">Top three</span>
+                <span className="font-display text-[11px] font-bold uppercase tracking-[0.16em] text-signal-yellow">
+                  Ranked by score
+                </span>
+              </div>
+
+              <div className="grid gap-3 p-4 sm:grid-cols-3 sm:items-end">
+                {podiumOrder.map((result, index) => {
+                  const rank = sorted.findIndex((item) => item.id === result.id) + 1
+                  const style = PODIUM[rank - 1]
+                  return (
+                    <div
+                      key={result.id}
+                      className={`flex flex-col justify-between border-2 border-ink p-4 ${style.order} ${style.surface} ${style.min}`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <span className={`num text-5xl leading-none ${style.label}`} aria-hidden="true">
+                          {String(rank).padStart(2, '0')}
+                        </span>
+                        <span className="font-display text-[11px] font-bold uppercase tracking-[0.16em]">
+                          Rank {rank}
+                        </span>
+                      </div>
+                      <div className="mt-6">
+                        <p className="truncate font-display text-2xl font-bold uppercase leading-tight tracking-tight">
+                          {result.user?.username || 'Player'}
+                        </p>
+                        <p
+                          className={`mt-1 text-xs ${
+                            rank === 1 ? 'text-ink-200' : 'text-ink-600'
+                          }`}
+                        >
+                          {result.score}/{result.max_score} points / {formatDuration(result.time_taken)}
+                        </p>
+                        <p className="num mt-2 text-3xl">{Math.round(Number(result.percentage || 0))}%</p>
+                      </div>
                     </div>
-                    <p className="mt-3 truncate text-lg font-bold text-white">
-                      {result.user?.username || 'Player'}
-                    </p>
-                    <p className="text-xs text-slate-400">
-                      {result.score}/{result.max_score} points · {formatDuration(result.time_taken)}
-                    </p>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
             </section>
           )}
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-xl font-bold">All attempts</h2>
-            <label className="inline-flex items-center gap-2 text-sm text-slate-400">
-              <span>Sort</span>
-              <select
-                className="input-field min-h-[44px] w-auto py-2"
-                value={sortBy}
-                onChange={(event) => setSortBy(event.target.value)}
-              >
-                {SORTS.map((sort) => (
-                  <option key={sort.value} value={sort.value}>
-                    {sort.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+          <div className="mt-8 border-2 border-ink bg-white">
+            <div className="flex flex-col gap-3 border-b-2 border-ink bg-ink px-4 py-3 text-white sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="font-display text-[13px] font-bold uppercase tracking-[0.16em]">
+                All attempts
+                <span className="ml-2 border-2 border-white/40 px-1.5 py-0.5 text-[11px] tabular-nums text-signal-yellow">
+                  {results.length}
+                </span>
+              </h2>
+              <label className="flex items-center gap-2">
+                <span className="font-display text-[11px] font-bold uppercase tracking-[0.12em] text-ink-200">
+                  Sort
+                </span>
+                <select
+                  className="input-field min-h-[40px] w-auto border-white bg-ink px-2 py-1 text-white focus:ring-offset-ink"
+                  value={sortBy}
+                  onChange={(event) => setSortBy(event.target.value)}
+                >
+                  {SORTS.map((sort) => (
+                    <option key={sort.value} value={sort.value} className="bg-white text-ink">
+                      {sort.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
 
-          <div className="surface mt-4 overflow-hidden">
-            <table className="hidden w-full text-left text-sm sm:table">
-              <caption className="sr-only">Attempts for {quiz.title}</caption>
-              <thead className="border-b border-white/10 bg-white/[0.04] text-xs uppercase tracking-wider text-slate-400">
-                <tr>
-                  <th scope="col" className="px-5 py-3">
-                    Player
-                  </th>
-                  <th scope="col" className="px-5 py-3">
-                    Score
-                  </th>
-                  <th scope="col" className="px-5 py-3">
-                    Correct
-                  </th>
-                  <th scope="col" className="px-5 py-3">
-                    Time
-                  </th>
-                  <th scope="col" className="px-5 py-3">
-                    Date
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {sorted.map((result) => (
-                  <tr key={result.id} className="transition hover:bg-white/[0.03]">
-                    <td className="px-5 py-3 font-semibold text-white">{result.user?.username || 'Player'}</td>
-                    <td className="px-5 py-3">
-                      <span className="font-bold text-secondary-200">{Math.round(Number(result.percentage || 0))}%</span>
-                      <span className="ml-2 text-xs text-slate-500">
-                        {result.score}/{result.max_score}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 text-slate-300">
-                      {result.correct_answers}/{result.total_questions}
-                    </td>
-                    <td className="px-5 py-3 text-slate-300">{formatDuration(result.time_taken)}</td>
-                    <td className="px-5 py-3 text-slate-400">{formatDate(result.completed_at)}</td>
+            <div className="hidden sm:block">
+              <table className="data-table">
+                <caption className="sr-only">Attempts for {quiz.title}</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Player</th>
+                    <th scope="col">Score</th>
+                    <th scope="col">Correct</th>
+                    <th scope="col">Time</th>
+                    <th scope="col">Date</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {sorted.map((result) => (
+                    <tr key={result.id}>
+                      <td className="font-semibold text-ink">{result.user?.username || 'Player'}</td>
+                      <td>
+                        <span className="num text-xl">{Math.round(Number(result.percentage || 0))}%</span>
+                        <span className="ml-2 text-xs text-ink-600">
+                          {result.score}/{result.max_score}
+                        </span>
+                      </td>
+                      <td className="tabular-nums">
+                        {result.correct_answers}/{result.total_questions}
+                      </td>
+                      <td className="whitespace-nowrap tabular-nums">{formatDuration(result.time_taken)}</td>
+                      <td className="whitespace-nowrap text-ink-600">{formatDate(result.completed_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-            <ul className="divide-y divide-white/5 sm:hidden">
+            <ul className="sm:hidden">
               {sorted.map((result) => (
-                <li key={result.id} className="p-4">
+                <li key={result.id} className="border-b border-ink/20 p-4 last:border-b-0">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="truncate font-semibold text-white">{result.user?.username || 'Player'}</p>
-                    <p className="font-bold text-secondary-200">{Math.round(Number(result.percentage || 0))}%</p>
+                    <p className="truncate font-display text-lg font-bold uppercase tracking-tight">
+                      {result.user?.username || 'Player'}
+                    </p>
+                    <p className="num text-2xl">{Math.round(Number(result.percentage || 0))}%</p>
                   </div>
-                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-400">
-                    <span className="inline-flex items-center gap-1">
-                      <Target size={12} aria-hidden="true" /> {result.correct_answers}/{result.total_questions}
+                  <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-600">
+                    <span>
+                      {result.correct_answers}/{result.total_questions} correct
                     </span>
-                    <span className="inline-flex items-center gap-1">
-                      <Clock3 size={12} aria-hidden="true" /> {formatDuration(result.time_taken)}
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <Calendar size={12} aria-hidden="true" /> {formatDate(result.completed_at)}
-                    </span>
+                    <span>{formatDuration(result.time_taken)}</span>
+                    <span>{formatDate(result.completed_at)}</span>
                   </div>
                 </li>
               ))}

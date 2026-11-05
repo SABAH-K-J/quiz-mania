@@ -1,18 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import {
-  ArrowLeft,
-  CheckCircle2,
-  Clock3,
-  GripVertical,
-  ListChecks,
-  PlusCircle,
-  Rocket,
-  Save,
-  Sparkles,
-  Trash2,
-  TriangleAlert,
-} from 'lucide-react'
+import { ArrowLeft, Check, Plus, Rocket, Save, Trash2, TriangleAlert } from 'lucide-react'
 import { getErrorMessage, questionAPI, quizAPI } from '../services/api'
 import { Alert, Spinner } from './ui'
 
@@ -31,7 +19,7 @@ const CATEGORIES = [
 const QUESTION_TYPES = [
   { value: 'multiple_choice', label: 'Multiple choice', hint: 'One correct answer' },
   { value: 'true_false', label: 'True / false', hint: 'Exactly two options' },
-  { value: 'multi_select', label: 'Multiple select', hint: 'One or more correct answers' },
+  { value: 'multi_select', label: 'Multiple select', hint: 'One or more correct' },
 ]
 
 let localId = 0
@@ -56,11 +44,11 @@ function maxOptionsFor(type) {
   return type === 'multi_select' ? 6 : 4
 }
 
-function normalizeQuiz(quiz) {
+function normalizeQuiz(quiz, initialCategory) {
   return {
     title: quiz?.title || '',
     description: quiz?.description || '',
-    category: quiz?.category || 'general',
+    category: quiz?.category || initialCategory || 'general',
     time_limit_minutes: quiz?.time_limit ? Math.round((quiz.time_limit / 60) * 10) / 10 : '',
     show_correct_answers: quiz?.show_correct_answers ?? true,
     allow_retake: quiz?.allow_retake ?? true,
@@ -86,12 +74,26 @@ function normalizeQuestion(question, index) {
   }
 }
 
-export default function QuizBuilder({ mode = 'create', quizId, initialQuiz, initialQuestions = [] }) {
+function SectionHead({ number, title, note, children }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-ink bg-ink px-4 py-2.5 text-white">
+      <div className="flex items-baseline gap-3">
+        <span className="num text-2xl text-signal-yellow" aria-hidden="true">
+          {number}
+        </span>
+        <h2 className="font-display text-[13px] font-bold uppercase tracking-[0.16em]">{title}</h2>
+      </div>
+      {children || (note && <span className="text-xs text-ink-300">{note}</span>)}
+    </div>
+  )
+}
+
+export default function QuizBuilder({ mode = 'create', quizId, initialQuiz, initialQuestions = [], initialCategory }) {
   const navigate = useNavigate()
   const location = useLocation()
   const isEdit = mode === 'edit'
 
-  const [quiz, setQuiz] = useState(() => normalizeQuiz(initialQuiz))
+  const [quiz, setQuiz] = useState(() => normalizeQuiz(initialQuiz, initialCategory))
   const [questions, setQuestions] = useState(() =>
     initialQuestions.length > 0 ? initialQuestions.map(normalizeQuestion) : [emptyQuestion(0)],
   )
@@ -332,11 +334,7 @@ export default function QuizBuilder({ mode = 'create', quizId, initialQuiz, init
 
   return (
     <form onSubmit={(event) => handleSubmit(event, false)} className="space-y-6">
-      {stateNotice && (
-        <Alert tone="info" className="mb-2">
-          {stateNotice}
-        </Alert>
-      )}
+      {stateNotice && <Alert tone="info">{stateNotice}</Alert>}
 
       {error && (
         <Alert tone="error">
@@ -351,19 +349,13 @@ export default function QuizBuilder({ mode = 'create', quizId, initialQuiz, init
         </Alert>
       )}
 
-      {/* Details */}
-      <section className="surface p-5 sm:p-7" aria-labelledby="details-heading">
-        <div className="flex items-center gap-2">
-          <Sparkles size={18} className="text-secondary-300" aria-hidden="true" />
-          <h2 id="details-heading" className="text-xl font-bold">
-            Quiz details
-          </h2>
-        </div>
+      <section className="border-2 border-ink bg-white" aria-labelledby="details-heading">
+        <SectionHead number="01" title="Quiz details" note="Title, category and rules" />
 
-        <div className="mt-5 grid gap-5">
+        <div className="grid gap-5 p-4 sm:p-6">
           <div>
             <label htmlFor="title" className="label">
-              Title <span className="text-rose-300">*</span>
+              Title <span className="text-signal-red-dark">*</span>
             </label>
             <input
               id="title"
@@ -380,7 +372,8 @@ export default function QuizBuilder({ mode = 'create', quizId, initialQuiz, init
 
           <div>
             <label htmlFor="description" className="label">
-              Description <span className="font-normal text-slate-500">(optional)</span>
+              Description{' '}
+              <span className="font-body font-normal normal-case tracking-normal text-ink-500">(optional)</span>
             </label>
             <textarea
               id="description"
@@ -415,285 +408,339 @@ export default function QuizBuilder({ mode = 'create', quizId, initialQuiz, init
               <label htmlFor="time_limit" className="label">
                 Time limit
               </label>
-              <div className="relative">
-                <Clock3
-                  size={17}
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
-                  aria-hidden="true"
-                />
-                <input
-                  id="time_limit"
-                  type="number"
-                  min="0.5"
-                  max="1440"
-                  step="0.5"
-                  className="input-field pl-10"
-                  placeholder="No limit"
-                  value={quiz.time_limit_minutes}
-                  onChange={(event) => updateQuiz('time_limit_minutes', event.target.value)}
-                />
-              </div>
+              <input
+                id="time_limit"
+                type="number"
+                min="0.5"
+                max="1440"
+                step="0.5"
+                className="input-field"
+                placeholder="No limit"
+                value={quiz.time_limit_minutes}
+                onChange={(event) => updateQuiz('time_limit_minutes', event.target.value)}
+              />
               <p className="hint">Minutes. Leave empty for an untimed quiz.</p>
             </div>
           </div>
 
           <fieldset className="grid gap-3 sm:grid-cols-2">
             <legend className="sr-only">Quiz options</legend>
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-white/20">
+            <label className="flex cursor-pointer items-start gap-3 border-2 border-ink bg-arena-50 p-4 transition hover:bg-signal-yellow-soft">
               <input
                 type="checkbox"
-                className="mt-0.5 h-5 w-5 rounded border-white/20 bg-ink-900 text-primary-500 focus:ring-primary-400"
+                className="sr-only"
                 checked={quiz.show_correct_answers}
                 onChange={(event) => updateQuiz('show_correct_answers', event.target.checked)}
               />
+              <span
+                className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center border-2 ${
+                  quiz.show_correct_answers ? 'border-ink bg-signal-green text-white' : 'border-ink bg-white text-transparent'
+                }`}
+                aria-hidden="true"
+              >
+                <Check size={13} strokeWidth={3} />
+              </span>
               <span>
-                <span className="block text-sm font-semibold text-white">Reveal correct answers</span>
-                <span className="mt-0.5 block text-xs text-slate-400">
+                <span className="block font-display text-[15px] font-bold uppercase tracking-[0.06em]">
+                  Reveal correct answers
+                </span>
+                <span className="mt-1 block text-xs leading-relaxed text-ink-600">
                   Show which answers were right after submitting.
                 </span>
               </span>
             </label>
 
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-white/20">
+            <label className="flex cursor-pointer items-start gap-3 border-2 border-ink bg-arena-50 p-4 transition hover:bg-signal-yellow-soft">
               <input
                 type="checkbox"
-                className="mt-0.5 h-5 w-5 rounded border-white/20 bg-ink-900 text-primary-500 focus:ring-primary-400"
+                className="sr-only"
                 checked={quiz.allow_retake}
                 onChange={(event) => updateQuiz('allow_retake', event.target.checked)}
               />
+              <span
+                className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center border-2 ${
+                  quiz.allow_retake ? 'border-ink bg-signal-green text-white' : 'border-ink bg-white text-transparent'
+                }`}
+                aria-hidden="true"
+              >
+                <Check size={13} strokeWidth={3} />
+              </span>
               <span>
-                <span className="block text-sm font-semibold text-white">Allow retakes</span>
-                <span className="mt-0.5 block text-xs text-slate-400">
+                <span className="block font-display text-[15px] font-bold uppercase tracking-[0.06em]">
+                  Allow retakes
+                </span>
+                <span className="mt-1 block text-xs leading-relaxed text-ink-600">
                   Players can take this quiz more than once.
                 </span>
               </span>
             </label>
           </fieldset>
+
+          <div className="score-strip-3" aria-label="Quiz summary">
+            <div className="p-3">
+              <p className="font-display text-[10px] font-bold uppercase tracking-[0.16em] text-ink-600">Questions</p>
+              <p className="num mt-1 text-3xl">{questions.length}</p>
+            </div>
+            <div className="p-3">
+              <p className="font-display text-[10px] font-bold uppercase tracking-[0.16em] text-ink-600">Total points</p>
+              <p className="num mt-1 text-3xl">{totalPoints}</p>
+            </div>
+            <div className="p-3">
+              <p className="font-display text-[10px] font-bold uppercase tracking-[0.16em] text-ink-600">Category</p>
+              <p className="mt-2 font-display text-lg font-bold uppercase leading-none tracking-tight">
+                {CATEGORIES.find((category) => category.value === quiz.category)?.label || quiz.category}
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Questions */}
-      <section className="surface p-5 sm:p-7" aria-labelledby="questions-heading">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <ListChecks size={18} className="text-primary-300" aria-hidden="true" />
-              <h2 id="questions-heading" className="text-xl font-bold">
-                Questions
-              </h2>
-            </div>
-            <p className="mt-1 text-sm text-slate-400">
-              {questions.length} question{questions.length === 1 ? '' : 's'} · {totalPoints} total point
-              {totalPoints === 1 ? '' : 's'}
-            </p>
-          </div>
-          <button type="button" onClick={addQuestion} className="btn-secondary">
-            <PlusCircle size={17} aria-hidden="true" /> Add question
+      <section className="border-2 border-ink bg-white" aria-labelledby="questions-heading">
+        <SectionHead number="02" title="Questions" note={`${questions.length} on the board`}>
+          <button type="button" onClick={addQuestion} className="btn btn-ghost-light btn-sm">
+            <Plus size={15} aria-hidden="true" /> Add question
           </button>
-        </div>
+        </SectionHead>
 
-        <div className="mt-6 space-y-5">
+        <div className="space-y-5 p-4 sm:p-6">
           {questions.map((question, questionIndex) => {
             const optionLimit = maxOptionsFor(question.question_type)
             const isTrueFalse = question.question_type === 'true_false'
 
             return (
-              <article key={question.key} className="rounded-2xl border border-white/10 bg-ink-950/40 p-4 sm:p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-300">
-                    <GripVertical size={16} className="text-slate-600" aria-hidden="true" />
-                    Question {questionIndex + 1}
+              <article key={question.key} className="border-2 border-ink bg-white">
+                <div className="flex items-center justify-between gap-3 border-b-2 border-ink bg-arena-50 px-3 py-2.5">
+                  <div className="flex items-baseline gap-2.5">
+                    <span className="num text-2xl" aria-hidden="true">
+                      {String(questionIndex + 1).padStart(2, '0')}
+                    </span>
+                    <h3 className="font-display text-[12px] font-bold uppercase tracking-[0.16em]">
+                      Question {questionIndex + 1}
+                    </h3>
                   </div>
                   <button
                     type="button"
                     onClick={() => removeQuestion(questionIndex)}
                     disabled={deletingId === question.id || questions.length === 1}
-                    className="btn-ghost px-2 text-rose-300 hover:bg-rose-500/10"
+                    className="btn btn-ghost btn-sm px-2 text-signal-red-dark"
                     aria-label={`Delete question ${questionIndex + 1}`}
                   >
-                    <Trash2 size={17} aria-hidden="true" />
+                    <Trash2 size={16} aria-hidden="true" />
                   </button>
                 </div>
 
-                <div className="mt-3">
-                  <label htmlFor={`question-${question.key}`} className="label">
-                    Question text <span className="text-rose-300">*</span>
-                  </label>
-                  <textarea
-                    id={`question-${question.key}`}
-                    rows={2}
-                    className="input-field"
-                    placeholder="Type the question your players will answer"
-                    value={question.text}
-                    onChange={(event) => updateQuestion(questionIndex, 'text', event.target.value)}
-                  />
-                </div>
-
-                <div className="mt-4 grid gap-4 sm:grid-cols-[1.4fr_0.6fr]">
+                <div className="p-4 sm:p-5">
                   <div>
-                    <span className="label">Answer type</span>
-                    <div className="flex flex-wrap gap-2" role="group" aria-label={`Answer type for question ${questionIndex + 1}`}>
-                      {QUESTION_TYPES.map((type) => {
-                        const active = question.question_type === type.value
-                        return (
-                          <button
-                            key={type.value}
-                            type="button"
-                            onClick={() => changeType(questionIndex, type.value)}
-                            aria-pressed={active}
-                            className={`min-h-[44px] rounded-xl border px-3 py-2 text-left text-xs transition ${
-                              active
-                                ? 'border-primary-400/60 bg-primary-500/15 text-white'
-                                : 'border-white/10 bg-white/[0.03] text-slate-400 hover:border-white/25 hover:text-white'
-                            }`}
-                          >
-                            <span className="block font-semibold">{type.label}</span>
-                            <span className="mt-0.5 block text-[11px] text-slate-400">{type.hint}</span>
-                          </button>
-                        )
-                      })}
+                    <label htmlFor={`question-${question.key}`} className="label">
+                      Question text <span className="text-signal-red-dark">*</span>
+                    </label>
+                    <textarea
+                      id={`question-${question.key}`}
+                      rows={2}
+                      className="input-field"
+                      placeholder="Type the question your players will answer"
+                      value={question.text}
+                      onChange={(event) => updateQuestion(questionIndex, 'text', event.target.value)}
+                    />
+                  </div>
+
+                  <div className="mt-4 grid gap-4 sm:grid-cols-[1.4fr_0.6fr]">
+                    <div>
+                      <span className="label">Answer type</span>
+                      <div
+                        className="grid gap-2 sm:grid-cols-3"
+                        role="group"
+                        aria-label={`Answer type for question ${questionIndex + 1}`}
+                      >
+                        {QUESTION_TYPES.map((type) => {
+                          const active = question.question_type === type.value
+                          return (
+                            <button
+                              key={type.value}
+                              type="button"
+                              onClick={() => changeType(questionIndex, type.value)}
+                              aria-pressed={active}
+                              className={`min-h-[56px] border-2 px-2.5 py-2 text-left transition ${
+                                active
+                                  ? 'border-ink bg-ink text-white'
+                                  : 'border-ink/30 bg-white text-ink hover:border-ink hover:bg-arena-50'
+                              }`}
+                            >
+                              <span className="block font-display text-[13px] font-bold uppercase leading-tight tracking-[0.04em]">
+                                {type.label}
+                              </span>
+                              <span
+                                className={`mt-0.5 block text-[11px] leading-snug ${
+                                  active ? 'text-ink-200' : 'text-ink-500'
+                                }`}
+                              >
+                                {type.hint}
+                              </span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor={`points-${question.key}`} className="label">
+                        Points
+                      </label>
+                      <input
+                        id={`points-${question.key}`}
+                        type="number"
+                        min="1"
+                        max="100"
+                        className="input-field"
+                        value={question.points}
+                        onChange={(event) => updateQuestion(questionIndex, 'points', event.target.value)}
+                      />
                     </div>
                   </div>
 
-                  <div>
-                    <label htmlFor={`points-${question.key}`} className="label">
-                      Points
+                  <fieldset className="mt-4">
+                    <legend className="label">
+                      Answer options <span className="text-signal-red-dark">*</span>
+                    </legend>
+                    <p className="hint mb-3 mt-0">
+                      Tick every correct answer.{' '}
+                      {isTrueFalse ? 'True/false is fixed to two options.' : `Use 2–${optionLimit} options.`}
+                    </p>
+
+                    <div className="space-y-2">
+                      {question.options.map((option, optionIndex) => (
+                        <div
+                          key={option.key}
+                          className={`flex items-center gap-2 border-2 p-1.5 transition ${
+                            option.is_correct ? 'border-signal-green bg-signal-green-soft' : 'border-ink/30 bg-white'
+                          }`}
+                        >
+                          <label
+                            className={`grid h-11 w-11 shrink-0 cursor-pointer place-items-center border-2 transition ${
+                              option.is_correct
+                                ? 'border-ink bg-signal-green text-white'
+                                : 'border-ink bg-white text-ink-300 hover:bg-arena-100'
+                            }`}
+                            title="Mark as correct"
+                          >
+                            <input
+                              type="checkbox"
+                              className="sr-only"
+                              checked={option.is_correct}
+                              onChange={(event) =>
+                                updateOption(questionIndex, optionIndex, 'is_correct', event.target.checked)
+                              }
+                              aria-label={`Mark option ${optionIndex + 1} as correct for question ${questionIndex + 1}`}
+                            />
+                            <Check size={18} strokeWidth={3} aria-hidden="true" />
+                          </label>
+
+                          <input
+                            type="text"
+                            className="min-h-[44px] w-full min-w-0 border-0 bg-transparent px-2 text-[15px] text-ink placeholder:text-ink-500 focus:outline-none focus:ring-2 focus:ring-signal-blue"
+                            placeholder={`Option ${optionIndex + 1}`}
+                            value={option.text}
+                            onChange={(event) => updateOption(questionIndex, optionIndex, 'text', event.target.value)}
+                            disabled={isTrueFalse}
+                            aria-label={`Option ${optionIndex + 1} for question ${questionIndex + 1}`}
+                            required
+                          />
+
+                          {!isTrueFalse && question.options.length > 2 ? (
+                            <button
+                              type="button"
+                              onClick={() => removeOption(questionIndex, optionIndex)}
+                              className="grid h-11 w-11 shrink-0 place-items-center border-2 border-transparent text-ink-500 transition hover:border-ink hover:bg-ink hover:text-white"
+                              aria-label={`Remove option ${optionIndex + 1}`}
+                            >
+                              <Trash2 size={16} aria-hidden="true" />
+                            </button>
+                          ) : (
+                            <span className="h-11 w-11 shrink-0" aria-hidden="true" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {!isTrueFalse && question.options.length < optionLimit && (
+                      <button
+                        type="button"
+                        onClick={() => addOption(questionIndex)}
+                        className="btn btn-ghost btn-sm mt-2 px-2 text-signal-blue"
+                      >
+                        <Plus size={15} aria-hidden="true" /> Add another option
+                      </button>
+                    )}
+                  </fieldset>
+
+                  <div className="mt-4">
+                    <label htmlFor={`explanation-${question.key}`} className="label">
+                      Explanation{' '}
+                      <span className="font-body font-normal normal-case tracking-normal text-ink-500">(optional)</span>
                     </label>
-                    <input
-                      id={`points-${question.key}`}
-                      type="number"
-                      min="1"
-                      max="100"
+                    <textarea
+                      id={`explanation-${question.key}`}
+                      rows={2}
                       className="input-field"
-                      value={question.points}
-                      onChange={(event) => updateQuestion(questionIndex, 'points', event.target.value)}
+                      placeholder="A short note players can learn from"
+                      value={question.explanation}
+                      onChange={(event) => updateQuestion(questionIndex, 'explanation', event.target.value)}
                     />
                   </div>
-                </div>
-
-                <fieldset className="mt-4">
-                  <legend className="label">
-                    Answer options <span className="text-rose-300">*</span>
-                  </legend>
-                  <p className="hint -mt-1 mb-3">
-                    Tick every correct answer. {isTrueFalse ? 'True/false is fixed to two options.' : `Use 2–${optionLimit} options.`}
-                  </p>
-
-                  <div className="space-y-2">
-                    {question.options.map((option, optionIndex) => (
-                      <div key={option.key} className="flex items-center gap-2">
-                        <label
-                          className={`grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-lg border transition ${
-                            option.is_correct
-                              ? 'border-emerald-400/60 bg-emerald-500/20 text-emerald-300'
-                              : 'border-white/10 bg-white/[0.03] text-slate-500 hover:border-white/25'
-                          }`}
-                          title="Mark as correct"
-                        >
-                          <input
-                            type="checkbox"
-                            className="sr-only"
-                            checked={option.is_correct}
-                            onChange={(event) =>
-                              updateOption(questionIndex, optionIndex, 'is_correct', event.target.checked)
-                            }
-                            aria-label={`Mark option ${optionIndex + 1} as correct for question ${questionIndex + 1}`}
-                          />
-                          <CheckCircle2 size={18} aria-hidden="true" />
-                        </label>
-
-                        <input
-                          type="text"
-                          className="input-field"
-                          placeholder={`Option ${optionIndex + 1}`}
-                          value={option.text}
-                          onChange={(event) => updateOption(questionIndex, optionIndex, 'text', event.target.value)}
-                          disabled={isTrueFalse}
-                          aria-label={`Option ${optionIndex + 1} for question ${questionIndex + 1}`}
-                          required
-                        />
-
-                        {!isTrueFalse && question.options.length > 2 && (
-                          <button
-                            type="button"
-                            onClick={() => removeOption(questionIndex, optionIndex)}
-                            className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-slate-400 transition hover:bg-rose-500/10 hover:text-rose-300"
-                            aria-label={`Remove option ${optionIndex + 1}`}
-                          >
-                            <Trash2 size={16} aria-hidden="true" />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  {!isTrueFalse && question.options.length < optionLimit && (
-                    <button
-                      type="button"
-                      onClick={() => addOption(questionIndex)}
-                      className="btn-ghost mt-2 px-2 text-sm text-primary-300"
-                    >
-                      <PlusCircle size={16} aria-hidden="true" /> Add another option
-                    </button>
-                  )}
-                </fieldset>
-
-                <div className="mt-4">
-                  <label htmlFor={`explanation-${question.key}`} className="label">
-                    Explanation <span className="font-normal text-slate-500">(optional)</span>
-                  </label>
-                  <textarea
-                    id={`explanation-${question.key}`}
-                    rows={2}
-                    className="input-field"
-                    placeholder="A short note players can learn from"
-                    value={question.explanation}
-                    onChange={(event) => updateQuestion(questionIndex, 'explanation', event.target.value)}
-                  />
                 </div>
               </article>
             )
           })}
         </div>
 
-        <button type="button" onClick={addQuestion} className="btn-secondary mt-5 w-full">
-          <PlusCircle size={17} aria-hidden="true" /> Add another question
-        </button>
+        <div className="border-t-2 border-ink p-4">
+          <button type="button" onClick={addQuestion} className="btn btn-secondary w-full">
+            <Plus size={17} aria-hidden="true" /> Add another question
+          </button>
+        </div>
       </section>
 
-      {/* Actions */}
-      <div className="surface sticky bottom-4 flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <Link to="/dashboard" className="btn-ghost">
-          <ArrowLeft size={17} aria-hidden="true" /> Back to dashboard
-        </Link>
+      <div className="sticky bottom-0 z-20 border-2 border-ink bg-white p-3 sm:bottom-4 sm:p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Link to="/dashboard" className="btn btn-ghost btn-sm justify-start">
+            <ArrowLeft size={16} aria-hidden="true" /> Back to dashboard
+          </Link>
 
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <button type="submit" disabled={busy} className="btn-secondary">
-            <Save size={17} aria-hidden="true" /> {busy ? busyLabel || 'Saving…' : 'Save as draft'}
-          </button>
-          <button
-            type="button"
-            onClick={(event) => handleSubmit(event, true)}
-            disabled={busy}
-            className="btn-primary"
-          >
-            <Rocket size={17} aria-hidden="true" /> {busy ? busyLabel || 'Working…' : 'Publish quiz'}
-          </button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button type="submit" disabled={busy} className="btn btn-secondary">
+              <Save size={16} aria-hidden="true" /> {busy ? busyLabel || 'Saving…' : 'Save as draft'}
+            </button>
+            <button
+              type="button"
+              onClick={(event) => handleSubmit(event, true)}
+              disabled={busy}
+              className="btn btn-primary"
+            >
+              <Rocket size={16} aria-hidden="true" /> {busy ? busyLabel || 'Working…' : 'Publish quiz'}
+            </button>
+          </div>
         </div>
       </div>
 
       {busy && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-ink-950/70 backdrop-blur-sm" role="status">
-          <div className="surface flex items-center gap-3 p-5">
-            <Spinner />
-            <span className="font-semibold">{busyLabel || 'Working…'}</span>
+        <div className="fixed inset-0 z-50 grid place-items-center bg-ink/80 p-4" role="status" aria-live="polite">
+          <div className="flex items-center gap-4 border-2 border-white bg-ink px-6 py-5 text-white">
+            <span className="flex gap-1.5" aria-hidden="true">
+              <span className="h-3 w-3 animate-pulse bg-signal-red" />
+              <span className="h-3 w-3 animate-pulse bg-signal-yellow [animation-delay:120ms]" />
+              <span className="h-3 w-3 animate-pulse bg-signal-blue [animation-delay:240ms]" />
+            </span>
+            <span className="font-display text-sm font-bold uppercase tracking-[0.16em]">
+              {busyLabel || 'Working…'}
+            </span>
           </div>
         </div>
       )}
 
       {quiz.title.trim() === '' && (
-        <p className="flex items-center justify-center gap-2 text-xs text-slate-500">
-          <TriangleAlert size={14} aria-hidden="true" /> Your quiz starts as a draft. Nothing is public until you publish.
+        <p className="flex items-center justify-center gap-2 text-xs text-ink-600">
+          <TriangleAlert size={14} aria-hidden="true" /> Your quiz starts as a draft. Nothing is public until you
+          publish.
         </p>
       )}
     </form>

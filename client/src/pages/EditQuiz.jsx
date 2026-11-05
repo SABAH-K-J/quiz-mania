@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Pencil } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import QuizBuilder from '../components/QuizBuilder'
-import { Alert, Spinner } from '../components/ui'
+import { Alert, PageHeader, Spinner, StatusBadge } from '../components/ui'
 import { getErrorMessage, quizAPI } from '../services/api'
 import useSEO from '../hooks/useSEO'
 
@@ -54,14 +54,14 @@ export default function EditQuiz() {
 
   if (error) {
     return (
-      <main className="container-page py-16">
-        <div className="mx-auto max-w-lg">
+      <main className="container-page py-12">
+        <div className="mx-auto max-w-lg border-2 border-ink bg-white p-6">
           <Alert tone="error">{error}</Alert>
-          <div className="mt-5 flex gap-3">
-            <Link to="/dashboard" className="btn-secondary">
-              <ArrowLeft size={17} aria-hidden="true" /> Back to dashboard
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link to="/dashboard" className="btn btn-secondary">
+              <ArrowLeft size={16} aria-hidden="true" /> Back to dashboard
             </Link>
-            <button type="button" onClick={() => navigate(0)} className="btn-primary">
+            <button type="button" onClick={() => navigate(0)} className="btn btn-primary">
               Try again
             </button>
           </div>
@@ -71,30 +71,25 @@ export default function EditQuiz() {
   }
 
   return (
-    <main className="container-page animate-fade-in py-10 sm:py-14">
-      <div className="mb-8">
-        <Link to="/dashboard" className="link inline-flex items-center gap-1.5 text-sm">
-          <ArrowLeft size={15} aria-hidden="true" /> Dashboard
-        </Link>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-xl bg-secondary-500/15 text-secondary-300">
-              <Pencil size={22} aria-hidden="true" />
+    <main className="container-page py-8 sm:py-12">
+      <PageHeader
+        meta={
+          <>
+            <StatusBadge status={quiz.status} />
+            <span className="badge status-quiet">{quiz.category}</span>
+            <span className="font-display text-[11px] font-bold uppercase tracking-[0.16em] text-ink-600">
+              Code <span className="tabular-nums text-ink">{quiz.code}</span>
             </span>
-            <div>
-              <h1 className="text-3xl font-extrabold sm:text-4xl">Edit quiz</h1>
-              <p className="mt-1 text-sm text-slate-400">
-                Changes are saved to your quiz immediately. Players keep the same code.
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm">
-            <span className="text-slate-400">Code </span>
-            <span className="font-mono font-bold tracking-widest text-secondary-200">{quiz.code}</span>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+        title="Edit quiz"
+        description="Changes are saved to your quiz. Players keep the same code."
+        actions={
+          <Link to="/dashboard" className="btn btn-secondary">
+            <ArrowLeft size={16} aria-hidden="true" /> Dashboard
+          </Link>
+        }
+      />
 
       <QuizBuilder
         mode="edit"

@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { BarChart3, LayoutDashboard, LogIn, LogOut, Menu, PlusCircle, Trophy, X, Zap } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 
 const navLinkClass = ({ isActive }) =>
-  `inline-flex min-h-[44px] items-center gap-2 rounded-xl px-3 text-sm font-semibold transition ${
-    isActive ? 'bg-white/10 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white'
+  `inline-flex min-h-[44px] items-center border-b-[3px] px-1 font-display text-[13px] font-bold uppercase tracking-[0.14em] transition ${
+    isActive
+      ? 'border-signal-red text-ink'
+      : 'border-transparent text-ink-600 hover:border-ink hover:text-ink'
+  }`
+
+const mobileLinkClass = ({ isActive }) =>
+  `flex min-h-[56px] items-center justify-between border-b-2 border-ink/20 font-display text-xl font-bold uppercase tracking-wide transition ${
+    isActive ? 'text-signal-red-dark' : 'text-ink hover:text-signal-red-dark'
   }`
 
 export default function Navbar() {
@@ -24,54 +31,61 @@ export default function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-ink-950/75 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b-2 border-ink bg-arena-50">
+      <div className="h-1 bg-signal-red" aria-hidden="true" />
       <nav className="container-page" aria-label="Main navigation">
-        <div className="flex h-16 items-center justify-between gap-3">
-          <Link to="/" className="flex items-center gap-2.5 rounded-xl py-1 pr-2" aria-label="Quiz Mania home">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-secondary-400 to-accent-pink text-ink-950 shadow-glow">
-              <Zap size={20} strokeWidth={2.6} aria-hidden="true" />
+        <div className="flex h-[68px] items-center justify-between gap-4">
+          <Link to="/" className="group flex items-center gap-2.5" aria-label="Quiz Mania home">
+            <span className="grid h-9 w-9 place-items-center border-2 border-ink bg-ink font-display text-xl font-bold leading-none text-white">
+              Q
             </span>
-            <span className="font-display text-lg font-extrabold tracking-tight text-white">
-              Quiz<span className="text-secondary-300">Mania</span>
+            <span className="font-display text-[22px] font-bold uppercase leading-none tracking-[-0.01em] text-ink">
+              Quiz Mania
             </span>
+            <span className="mt-[-14px] h-2 w-2 bg-signal-red" aria-hidden="true" />
           </Link>
 
-          <div className="hidden items-center gap-1 lg:flex">
+          <div className="hidden items-center gap-6 lg:flex">
             <NavLink to="/quiz/join" className={navLinkClass}>
-              <Trophy size={17} aria-hidden="true" /> Join a quiz
+              Play
             </NavLink>
             {isAuthenticated && (
               <>
                 <NavLink to="/dashboard" className={navLinkClass}>
-                  <LayoutDashboard size={17} aria-hidden="true" /> Dashboard
+                  Dashboard
                 </NavLink>
                 <NavLink to="/quiz/create" className={navLinkClass}>
-                  <PlusCircle size={17} aria-hidden="true" /> Create
+                  Create
                 </NavLink>
                 <NavLink to="/my-results" className={navLinkClass}>
-                  <BarChart3 size={17} aria-hidden="true" /> My results
+                  My results
                 </NavLink>
               </>
             )}
           </div>
 
-          <div className="hidden items-center gap-2 lg:flex">
+          <div className="hidden items-center gap-3 lg:flex">
             {isAuthenticated ? (
               <>
-                <span className="max-w-[10rem] truncate rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-slate-200">
-                  {user?.username || 'Player'}
+                <span className="flex items-center gap-2 border-2 border-ink bg-white px-2.5 py-1.5">
+                  <span className="grid h-5 w-5 place-items-center bg-signal-blue font-display text-[11px] font-bold uppercase text-white">
+                    {(user?.username || 'P').slice(0, 1)}
+                  </span>
+                  <span className="max-w-[9rem] truncate font-display text-[12px] font-bold uppercase tracking-[0.12em] text-ink">
+                    {user?.username || 'Player'}
+                  </span>
                 </span>
-                <button type="button" onClick={handleLogout} className="btn-ghost">
-                  <LogOut size={17} aria-hidden="true" /> Log out
+                <button type="button" onClick={handleLogout} className="btn btn-ghost btn-sm">
+                  Log out
                 </button>
               </>
             ) : (
               <>
-                <Link to="/login" className="btn-ghost">
-                  <LogIn size={17} aria-hidden="true" /> Log in
+                <Link to="/login" className="btn btn-ghost btn-sm">
+                  Log in
                 </Link>
-                <Link to="/register" className="btn-primary">
-                  Create free account
+                <Link to="/register" className="btn btn-primary btn-sm">
+                  Create account
                 </Link>
               </>
             )}
@@ -79,7 +93,7 @@ export default function Navbar() {
 
           <button
             type="button"
-            className="btn-ghost lg:hidden"
+            className="grid h-11 w-11 place-items-center border-2 border-ink bg-white text-ink transition hover:bg-ink hover:text-white lg:hidden"
             aria-expanded={open}
             aria-controls="mobile-menu"
             aria-label={open ? 'Close menu' : 'Open menu'}
@@ -90,31 +104,39 @@ export default function Navbar() {
         </div>
 
         {open && (
-          <div id="mobile-menu" className="grid gap-1 border-t border-white/10 py-3 lg:hidden">
-            <NavLink to="/quiz/join" className={navLinkClass}>
-              <Trophy size={17} aria-hidden="true" /> Join a quiz
+          <div id="mobile-menu" className="border-t-2 border-ink pb-6 pt-2 lg:hidden">
+            <NavLink to="/quiz/join" className={mobileLinkClass}>
+              <span>Play a quiz</span>
+              <span className="font-body text-xs font-semibold uppercase tracking-[0.16em] text-ink-500">Code</span>
             </NavLink>
             {isAuthenticated ? (
               <>
-                <NavLink to="/dashboard" className={navLinkClass}>
-                  <LayoutDashboard size={17} aria-hidden="true" /> Dashboard
+                <NavLink to="/dashboard" className={mobileLinkClass}>
+                  <span>Dashboard</span>
+                  <span className="font-body text-xs font-semibold uppercase tracking-[0.16em] text-ink-500">Host</span>
                 </NavLink>
-                <NavLink to="/quiz/create" className={navLinkClass}>
-                  <PlusCircle size={17} aria-hidden="true" /> Create a quiz
+                <NavLink to="/quiz/create" className={mobileLinkClass}>
+                  <span>Create a quiz</span>
+                  <span className="font-body text-xs font-semibold uppercase tracking-[0.16em] text-ink-500">New</span>
                 </NavLink>
-                <NavLink to="/my-results" className={navLinkClass}>
-                  <BarChart3 size={17} aria-hidden="true" /> My results
+                <NavLink to="/my-results" className={mobileLinkClass}>
+                  <span>My results</span>
+                  <span className="font-body text-xs font-semibold uppercase tracking-[0.16em] text-ink-500">Scores</span>
                 </NavLink>
-                <button type="button" onClick={handleLogout} className="btn-secondary mt-2 justify-start">
-                  <LogOut size={17} aria-hidden="true" /> Log out {user?.username ? `(${user.username})` : ''}
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="btn btn-secondary mt-4 w-full justify-start"
+                >
+                  Log out{user?.username ? ` (${user.username})` : ''}
                 </button>
               </>
             ) : (
-              <div className="mt-2 grid gap-2">
-                <Link to="/login" className="btn-secondary">
-                  <LogIn size={17} aria-hidden="true" /> Log in
+              <div className="mt-4 grid gap-2">
+                <Link to="/login" className="btn btn-secondary">
+                  Log in
                 </Link>
-                <Link to="/register" className="btn-primary">
+                <Link to="/register" className="btn btn-primary">
                   Create free account
                 </Link>
               </div>

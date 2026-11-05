@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "product": "Quiz Mania",
+  "mode": "web",
+  "world": "broadcast-trivia-scoreboard",
+  "theme": "light",
+  "colors": {
+    "arena": {
+      "50": "#faf9f4",
+      "100": "#f2f0e9",
+      "200": "#e7e4da",
+      "300": "#d8d4c7",
+      "400": "#c4bfaf"
+    },
+    "paper": "#ffffff",
+    "ink": {
+      "950": "#0e0f12",
+      "900": "#15161a",
+      "800": "#22252b",
+      "700": "#343941",
+      "600": "#4a505a",
+      "500": "#626a75",
+      "400": "#8a919b",
+      "300": "#b4bac2",
+      "200": "#d2d6db",
+      "100": "#e7e9ec"
+    },
+    "signal": {
+      "red": "#e4262c",
+      "redDark": "#b71b20",
+      "redSoft": "#fde8e8",
+      "blue": "#1746d1",
+      "blueDark": "#0f2f94",
+      "blueSoft": "#e6ecfc",
+      "yellow": "#f5c400",
+      "yellowDark": "#c79e00",
+      "yellowSoft": "#fff6cc",
+      "green": "#0e7a4a",
+      "greenSoft": "#e3f5eb"
+    }
+  },
+  "typography": {
+    "display": "\"Barlow Condensed\", \"Arial Narrow\", sans-serif",
+    "body": "\"Barlow\", ui-sans-serif, system-ui, sans-serif",
+    "weights": {
+      "display": [600, 700, 800],
+      "body": [400, 500, 600, 700]
+    },
+    "scale": {
+      "displayXl": "clamp(2.9rem, 7.4vw, 6rem)",
+      "displayLg": "clamp(2.25rem, 4.6vw, 3.9rem)",
+      "displayMd": "clamp(1.75rem, 3.2vw, 2.6rem)",
+      "body": "15px-16px"
+    },
+    "features": ["tabular-nums", "kern", "liga"]
+  },
+  "spacing": {
+    "containerPage": "1200px",
+    "containerWide": "1440px",
+    "borderWidth": "2px",
+    "focusRing": "3px"
+  },
+  "motion": {
+    "lamp": "2.4s steps(1,end) infinite",
+    "digitIn": "0.55s cubic-bezier(0.16,1,0.3,1)",
+    "railOut": "0.45s cubic-bezier(0.16,1,0.3,1)",
+    "reducedMotion": true
+  },
+  "components": [
+    "Spinner", "Alert", "EmptyState", "PageHeader", "StatusBadge",
+    "StatStrip", "ScoreDigits", "CodeEntry", "CopyCode", "TimeRail",
+    "Meter", "CheckMark", "AuthLayout", "Navbar", "Footer", "QuizBuilder"
+  ],
+  "bans": [
+    "gradients", "glass", "backdrop-blur", "eyebrow-labels",
+    "icon-card-grids", "rounded-card-default", "gradient-text"
+  ]
+}

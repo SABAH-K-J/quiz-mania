@@ -54,7 +54,7 @@ function AppLayout() {
       <ScrollToTop />
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:bg-secondary-400 focus:px-4 focus:py-2 focus:font-semibold focus:text-ink-950"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:border-2 focus:border-ink focus:bg-signal-yellow focus:px-4 focus:py-2 focus:font-display focus:font-bold focus:uppercase focus:tracking-wide focus:text-ink"
       >
         Skip to content
       </a>
@@ -62,7 +62,7 @@ function AppLayout() {
         <Navbar />
         <div id="main-content" className="flex-1">
           {isLoading ? (
-            <Spinner fullPage label="Warming up…" />
+            <Spinner fullPage label="Opening the board…" />
           ) : (
             <Routes>
               <Route path="/" element={<Home />} />

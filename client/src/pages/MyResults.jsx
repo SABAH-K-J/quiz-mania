@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { BarChart3, Calendar, Clock3, Filter, ListChecks, Target, Trophy, TrendingUp } from 'lucide-react'
+import { ArrowRight, Filter, Target, Trophy } from 'lucide-react'
 import { getErrorMessage, resultAPI } from '../services/api'
 import useSEO from '../hooks/useSEO'
-import { Alert, EmptyState, PageHeader, Spinner, StatCard } from '../components/ui'
+import { Alert, EmptyState, Meter, PageHeader, Spinner, StatStrip } from '../components/ui'
 
 function asList(data) {
   if (Array.isArray(data)) return data
@@ -23,10 +23,10 @@ function formatDuration(seconds) {
 }
 
 function scoreTone(percentage) {
-  if (percentage >= 80) return 'bg-emerald-400'
-  if (percentage >= 60) return 'bg-primary-400'
-  if (percentage >= 40) return 'bg-secondary-400'
-  return 'bg-rose-400'
+  if (percentage >= 80) return { meter: 'green', text: 'text-signal-green' }
+  if (percentage >= 60) return { meter: 'blue', text: 'text-signal-blue' }
+  if (percentage >= 40) return { meter: 'yellow', text: 'text-signal-yellow-dark' }
+  return { meter: 'red', text: 'text-signal-red-dark' }
 }
 
 export default function MyResults() {
@@ -83,30 +83,32 @@ export default function MyResults() {
   if (loading) return <Spinner fullPage label="Loading your results…" />
 
   return (
-    <main className="container-page animate-fade-in py-10 sm:py-14">
+    <main className="container-page py-8 sm:py-12">
       <PageHeader
-        eyebrow="Your history"
-        title="My results"
+        meta={<span className="badge status-quiet">Your history</span>}
+        title="Result history"
         description="Every quiz you have played, with scores, accuracy and time."
         actions={
-          <Link to="/quiz/join" className="btn-primary">
-            <Trophy size={18} aria-hidden="true" /> Play another quiz
+          <Link to="/quiz/join" className="btn btn-primary">
+            <Trophy size={17} aria-hidden="true" /> Play another quiz
           </Link>
         }
       />
 
       {error && (
-        <Alert className="mb-6" tone="error">
-          {error}
-        </Alert>
+        <div className="mb-6">
+          <Alert tone="error">{error}</Alert>
+        </div>
       )}
 
-      <section aria-label="Result stats" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={ListChecks} label="Attempts" value={stats.attempts} />
-        <StatCard icon={TrendingUp} label="Average score" value={`${stats.average}%`} accent="text-accent-teal" />
-        <StatCard icon={Trophy} label="Best score" value={`${stats.best}%`} accent="text-secondary-300" />
-        <StatCard icon={BarChart3} label="Unique quizzes" value={stats.quizzes} accent="text-primary-300" />
-      </section>
+      <StatStrip
+        items={[
+          { label: 'Attempts', value: stats.attempts, note: 'Every submitted play' },
+          { label: 'Average score', value: `${stats.average}%`, tone: 'text-signal-blue' },
+          { label: 'Best score', value: `${stats.best}%`, tone: 'text-signal-green' },
+          { label: 'Unique quizzes', value: stats.quizzes, note: 'Different boards played' },
+        ]}
+      />
 
       {results.length === 0 ? (
         <div className="mt-8">
@@ -115,7 +117,7 @@ export default function MyResults() {
             title="No results yet"
             description="Once you play a quiz, your score and answer breakdown will appear here."
             action={
-              <Link to="/quiz/join" className="btn-primary">
+              <Link to="/quiz/join" className="btn btn-primary">
                 <Trophy size={18} aria-hidden="true" /> Join your first quiz
               </Link>
             }
@@ -123,16 +125,16 @@ export default function MyResults() {
         </div>
       ) : (
         <>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-slate-400">
-              Showing {filtered.length} of {results.length} attempts
+          <div className="mt-8 flex flex-col gap-3 border-2 border-ink bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="font-display text-[12px] font-bold uppercase tracking-[0.14em] text-ink-600">
+              Showing <span className="text-ink">{filtered.length}</span> of {results.length} attempts
             </p>
 
-            <label className="inline-flex items-center gap-2 text-sm text-slate-400">
-              <Filter size={16} aria-hidden="true" />
-              <span className="sr-only">Filter by category</span>
+            <label className="flex items-center gap-2">
+              <Filter size={16} className="text-ink-600" aria-hidden="true" />
+              <span className="font-display text-[12px] font-bold uppercase tracking-[0.12em]">Category</span>
               <select
-                className="input-field min-h-[44px] w-auto py-2"
+                className="input-field min-h-[44px] w-auto py-1.5"
                 value={category}
                 onChange={(event) => setCategory(event.target.value)}
               >
@@ -146,51 +148,55 @@ export default function MyResults() {
           </div>
 
           <ul className="mt-4 grid gap-3">
-            {filtered.map((result) => {
+            {filtered.map((result, index) => {
               const percentage = Number(result.percentage || 0)
+              const tone = scoreTone(percentage)
               return (
-                <li key={result.id} className="surface p-5">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
+                <li key={result.id} className="border-2 border-ink bg-white">
+                  <div className="grid sm:grid-cols-[1fr_auto]">
+                    <div className="min-w-0 p-4 sm:p-5">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="truncate text-lg font-bold text-white">{result.quiz?.title || 'Quiz'}</h2>
-                        <span className="badge border border-white/10 bg-white/5 text-slate-300">
-                          {result.quiz?.category || 'general'}
+                        <span className="font-display text-[11px] font-bold tabular-nums text-ink-400" aria-hidden="true">
+                          {String(index + 1).padStart(2, '0')}
                         </span>
-                      </div>
-                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
-                        <span className="inline-flex items-center gap-1.5">
-                          <Calendar size={13} aria-hidden="true" /> {formatDate(result.completed_at)}
-                        </span>
-                        <span className="inline-flex items-center gap-1.5">
-                          <Target size={13} aria-hidden="true" /> {result.correct_answers}/{result.total_questions} correct
-                        </span>
-                        <span className="inline-flex items-center gap-1.5">
-                          <Clock3 size={13} aria-hidden="true" /> {formatDuration(result.time_taken)}
-                        </span>
-                        <span className="font-mono text-[11px] text-slate-500">CODE {result.quiz?.code}</span>
+                        <span className="badge status-quiet">{result.quiz?.category || 'general'}</span>
+                        <span className="text-xs text-ink-600">{formatDate(result.completed_at)}</span>
                       </div>
 
-                      <div className="mt-3 h-1.5 w-full max-w-md overflow-hidden rounded-full bg-white/10">
-                        <div
-                          className={`h-full rounded-full ${scoreTone(percentage)}`}
-                          style={{ width: `${Math.min(100, percentage)}%` }}
-                        />
+                      <h2 className="mt-2 font-display text-xl font-bold uppercase leading-tight tracking-tight">
+                        {result.quiz?.title || 'Quiz'}
+                      </h2>
+
+                      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-ink-600">
+                        <span>
+                          <span className="font-display font-bold tabular-nums text-ink">
+                            {result.correct_answers}/{result.total_questions}
+                          </span>{' '}
+                          correct
+                        </span>
+                        <span>{formatDuration(result.time_taken)}</span>
+                        <span className="font-display text-[11px] font-bold uppercase tracking-[0.14em]">
+                          Code {result.quiz?.code}
+                        </span>
+                      </div>
+
+                      <div className="mt-3 max-w-md">
+                        <Meter value={percentage} tone={tone.meter} />
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 sm:text-right">
-                      <div>
-                        <p className="text-2xl font-extrabold text-white">{percentage}%</p>
-                        <p className="text-xs text-slate-500">
+                    <div className="flex items-center justify-between gap-4 border-t-2 border-ink p-4 sm:min-w-[15rem] sm:flex-col sm:items-stretch sm:justify-center sm:border-l-2 sm:border-t-0 sm:p-5">
+                      <div className="text-right sm:text-left">
+                        <p className={`num text-4xl ${tone.text}`}>{percentage}%</p>
+                        <p className="mt-1 text-xs text-ink-600">
                           {result.score}/{result.max_score} points
                         </p>
                       </div>
                       <Link
                         to={`/quiz/play/${result.quiz?.code}`}
-                        className="btn-secondary whitespace-nowrap"
+                        className="btn btn-secondary btn-sm whitespace-nowrap"
                       >
-                        Play again
+                        Play again <ArrowRight size={14} aria-hidden="true" />
                       </Link>
                     </div>
                   </div>
@@ -200,7 +206,9 @@ export default function MyResults() {
           </ul>
 
           {filtered.length === 0 && (
-            <p className="mt-6 text-center text-sm text-slate-400">No attempts in this category yet.</p>
+            <p className="mt-6 border-2 border-ink bg-white px-4 py-6 text-center text-sm text-ink-600">
+              No attempts in this category yet.
+            </p>
           )}
         </>
       )}

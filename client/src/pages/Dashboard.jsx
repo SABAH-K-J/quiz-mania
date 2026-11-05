@@ -1,23 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import {
-  BarChart3,
-  CheckCircle2,
-  ClipboardCopy,
-  Clock3,
-  Eye,
-  ListChecks,
-  Pencil,
-  PlusCircle,
-  Rocket,
-  Trash2,
-  Trophy,
-  Users,
-} from 'lucide-react'
+import { Eye, Pencil, PlusCircle, Rocket, Trash2, Trophy } from 'lucide-react'
 import { getErrorMessage, quizAPI, resultAPI } from '../services/api'
 import useAuthStore from '../store/authStore'
 import useSEO from '../hooks/useSEO'
-import { Alert, EmptyState, PageHeader, Spinner, StatCard, StatusBadge } from '../components/ui'
+import { Alert, CopyCode, EmptyState, PageHeader, Spinner, StatStrip, StatusBadge } from '../components/ui'
 
 function asList(data) {
   if (Array.isArray(data)) return data
@@ -34,6 +21,13 @@ function formatDuration(seconds) {
   const mins = Math.floor(seconds / 60)
   const secs = seconds % 60
   return mins > 0 ? `${mins}m ${secs.toString().padStart(2, '0')}s` : `${secs}s`
+}
+
+function scoreTone(percentage) {
+  if (percentage >= 80) return 'text-signal-green'
+  if (percentage >= 60) return 'text-signal-blue'
+  if (percentage >= 40) return 'text-signal-yellow-dark'
+  return 'text-signal-red-dark'
 }
 
 export default function Dashboard() {
@@ -129,57 +123,77 @@ export default function Dashboard() {
   if (loading) return <Spinner fullPage label="Loading your dashboard…" />
 
   return (
-    <main className="container-page animate-fade-in py-10 sm:py-14">
+    <main className="container-page py-8 sm:py-12">
       <PageHeader
-        eyebrow={`Hey, ${user?.username || 'player'}`}
-        title="Your quiz control room"
+        meta={
+          <>
+            <span className="badge status-quiet">Control room</span>
+            <span className="font-display text-[11px] font-bold uppercase tracking-[0.16em] text-ink-600">
+              Signed in as {user?.username || 'player'}
+            </span>
+          </>
+        }
+        title="Your board"
         description="Create, publish and review everything from one place."
         actions={
           <>
-            <Link to="/quiz/join" className="btn-secondary">
-              <Trophy size={18} aria-hidden="true" /> Play a quiz
+            <Link to="/quiz/join" className="btn btn-secondary">
+              <Trophy size={17} aria-hidden="true" /> Play a quiz
             </Link>
-            <Link to="/quiz/create" className="btn-primary">
-              <PlusCircle size={18} aria-hidden="true" /> New quiz
+            <Link to="/quiz/create" className="btn btn-primary">
+              <PlusCircle size={17} aria-hidden="true" /> New quiz
             </Link>
           </>
         }
       />
 
       {error && (
-        <Alert className="mb-6" tone="error">
-          {error}
-        </Alert>
+        <div className="mb-6">
+          <Alert tone="error">{error}</Alert>
+        </div>
       )}
       {notice && (
-        <Alert className="mb-6" tone="success">
-          {notice}
-        </Alert>
+        <div className="mb-6">
+          <Alert tone="success">{notice}</Alert>
+        </div>
       )}
 
-      <section aria-label="Your stats" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={ListChecks} label="Quizzes created" value={quizzes.length} />
-        <StatCard icon={Rocket} label="Published" value={stats.published} accent="text-emerald-300" />
-        <StatCard icon={Users} label="Attempts on your quizzes" value={stats.attempts} accent="text-accent-teal" />
-        <StatCard icon={Trophy} label="Your best score" value={`${stats.best}%`} accent="text-secondary-300" />
-      </section>
+      <StatStrip
+        items={[
+          { label: 'Quizzes created', value: quizzes.length, note: 'Across every status' },
+          { label: 'Published', value: stats.published, note: 'Open to players', tone: 'text-signal-green' },
+          { label: 'Attempts received', value: stats.attempts, note: 'On your quizzes and plays' },
+          { label: 'Your best score', value: `${stats.best}%`, note: 'Across played quizzes', tone: 'text-signal-blue' },
+        ]}
+      />
 
-      <div className="mt-9 flex gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-1" role="tablist" aria-label="Dashboard sections">
+      <div
+        className="mt-8 grid border-2 border-ink bg-white sm:grid-cols-2"
+        role="tablist"
+        aria-label="Dashboard sections"
+      >
         {[
-          { id: 'created', label: 'My quizzes', icon: ListChecks },
-          { id: 'taken', label: 'Played quizzes', icon: Trophy },
-        ].map(({ id, label, icon: Icon }) => (
+          { id: 'created', label: 'My quizzes', count: quizzes.length },
+          { id: 'taken', label: 'Played quizzes', count: results.length },
+        ].map(({ id, label, count }) => (
           <button
             key={id}
             type="button"
             role="tab"
             aria-selected={tab === id}
             onClick={() => setTab(id)}
-            className={`inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold transition ${
-              tab === id ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white'
-            }`}
+            className={`flex min-h-[56px] items-center justify-between gap-3 px-4 font-display text-[15px] font-bold uppercase tracking-[0.1em] transition ${
+              tab === id ? 'bg-ink text-white' : 'bg-white text-ink hover:bg-arena-100'
+            } ${id === 'created' ? 'border-b-2 border-ink sm:border-b-0 sm:border-r-2' : ''}`}
           >
-            <Icon size={17} aria-hidden="true" /> {label}
+            <span>{label}</span>
+            <span
+              className={`min-w-9 border-2 px-1.5 py-0.5 text-center text-xs tabular-nums ${
+                tab === id ? 'border-white/40 text-signal-yellow' : 'border-ink text-ink'
+              }`}
+            >
+              {count}
+            </span>
           </button>
         ))}
       </div>
@@ -188,95 +202,104 @@ export default function Dashboard() {
         {tab === 'created' &&
           (quizzes.length === 0 ? (
             <EmptyState
-              icon={ListChecks}
+              icon={PlusCircle}
               title="No quizzes yet"
               description="Your first quiz is a few minutes away. Give it a title, add a few questions and publish."
               action={
-                <Link to="/quiz/create" className="btn-primary">
+                <Link to="/quiz/create" className="btn btn-primary">
                   <PlusCircle size={18} aria-hidden="true" /> Create your first quiz
                 </Link>
               }
             />
           ) : (
-            <ul className="grid gap-4">
-              {quizzes.map((quiz) => (
-                <li key={quiz.id} className="surface p-5 sm:p-6">
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="min-w-0">
+            <div className="border-2 border-ink bg-white">
+              <div className="hidden grid-cols-[3.5rem_1fr_12rem] border-b-2 border-ink bg-ink text-white lg:grid">
+                <span className="border-r-2 border-white/25 px-3 py-2.5 font-display text-[11px] font-bold uppercase tracking-[0.16em]">
+                  No.
+                </span>
+                <span className="px-4 py-2.5 font-display text-[11px] font-bold uppercase tracking-[0.16em]">Quiz</span>
+                <span className="border-l-2 border-white/25 px-4 py-2.5 font-display text-[11px] font-bold uppercase tracking-[0.16em]">
+                  Actions
+                </span>
+              </div>
+
+              <ul>
+                {quizzes.map((quiz, index) => (
+                  <li
+                    key={quiz.id}
+                    className="grid border-b-2 border-ink last:border-b-0 lg:grid-cols-[3.5rem_1fr_12rem]"
+                  >
+                    <div className="hidden place-items-start justify-center border-r-2 border-ink bg-arena-50 p-3 pt-5 lg:grid">
+                      <span className="num text-2xl text-ink-400">{String(index + 1).padStart(2, '0')}</span>
+                    </div>
+
+                    <div className="min-w-0 border-b-2 border-ink p-4 sm:p-5 lg:border-b-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <StatusBadge status={quiz.status} />
-                        <span className="badge border border-white/10 bg-white/5 text-slate-300">{quiz.category}</span>
-                        <span className="text-xs text-slate-500">{formatDate(quiz.created_at)}</span>
+                        <span className="badge status-quiet">{quiz.category}</span>
+                        <span className="text-xs text-ink-600">{formatDate(quiz.created_at)}</span>
                       </div>
-                      <h2 className="mt-3 truncate text-xl font-bold text-white">{quiz.title}</h2>
+
+                      <h2 className="mt-3 font-display text-2xl font-bold uppercase leading-tight tracking-tight">
+                        {quiz.title}
+                      </h2>
                       {quiz.description && (
-                        <p className="mt-1 line-clamp-2 max-w-2xl text-sm text-slate-400">{quiz.description}</p>
+                        <p className="mt-1 line-clamp-2 max-w-2xl text-sm leading-relaxed text-ink-600">
+                          {quiz.description}
+                        </p>
                       )}
 
-                      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-400">
-                        <span className="inline-flex items-center gap-1.5">
-                          <ListChecks size={15} aria-hidden="true" /> {quiz.question_count ?? 0} questions
+                      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2.5 text-sm text-ink-600">
+                        <span>
+                          <span className="font-display font-bold tabular-nums text-ink">
+                            {quiz.question_count ?? 0}
+                          </span>{' '}
+                          questions
                         </span>
-                        {quiz.time_limit ? (
-                          <span className="inline-flex items-center gap-1.5">
-                            <Clock3 size={15} aria-hidden="true" /> {Math.round(quiz.time_limit / 60)} min limit
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5">
-                            <Clock3 size={15} aria-hidden="true" /> No time limit
-                          </span>
-                        )}
-                        <span className="inline-flex items-center gap-1.5 font-mono text-xs text-slate-300">
-                          CODE
-                          <button
-                            type="button"
-                            onClick={() => copyCode(quiz.code)}
-                            className="inline-flex items-center gap-1.5 rounded-md bg-white/5 px-2 py-1 font-semibold tracking-widest text-secondary-200 transition hover:bg-white/10"
-                            aria-label={`Copy quiz code ${quiz.code}`}
-                          >
-                            {quiz.code}
-                            <ClipboardCopy size={13} aria-hidden="true" />
-                          </button>
+                        <span>{quiz.time_limit ? `${Math.round(quiz.time_limit / 60)} min limit` : 'No time limit'}</span>
+                        <span className="inline-flex items-center gap-2">
+                          <span className="font-display text-[11px] font-bold uppercase tracking-[0.14em]">Code</span>
+                          <CopyCode code={quiz.code} onCopy={() => copyCode(quiz.code)} />
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2 lg:justify-end">
+                    <div className="flex flex-wrap content-start gap-2 p-4 lg:flex-col lg:border-l-2 lg:border-ink/20">
                       {quiz.status === 'draft' && (
                         <button
                           type="button"
                           onClick={() => handlePublish(quiz)}
                           disabled={busyId === quiz.id}
-                          className="btn-primary"
+                          className="btn btn-primary btn-sm w-full"
                         >
-                          <Rocket size={16} aria-hidden="true" /> {busyId === quiz.id ? 'Publishing…' : 'Publish'}
+                          <Rocket size={15} aria-hidden="true" /> {busyId === quiz.id ? 'Publishing…' : 'Publish'}
                         </button>
                       )}
-                      <Link to={`/quiz/edit/${quiz.id}`} className="btn-secondary">
-                        <Pencil size={16} aria-hidden="true" /> Edit
+                      <Link to={`/quiz/edit/${quiz.id}`} className="btn btn-secondary btn-sm w-full">
+                        <Pencil size={15} aria-hidden="true" /> Edit
                       </Link>
-                      <Link to={`/quiz/results/${quiz.id}`} className="btn-secondary">
-                        <BarChart3 size={16} aria-hidden="true" /> Results
+                      <Link to={`/quiz/results/${quiz.id}`} className="btn btn-secondary btn-sm w-full">
+                        Results
                       </Link>
                       {quiz.status === 'published' && (
-                        <Link to={`/quiz/play/${quiz.code}`} className="btn-secondary">
-                          <Eye size={16} aria-hidden="true" /> Preview
+                        <Link to={`/quiz/play/${quiz.code}`} className="btn btn-secondary btn-sm w-full">
+                          <Eye size={15} aria-hidden="true" /> Preview
                         </Link>
                       )}
                       <button
                         type="button"
                         onClick={() => handleDelete(quiz)}
                         disabled={busyId === quiz.id}
-                        className="btn-danger"
+                        className="btn btn-danger btn-sm w-full"
                         aria-label={`Delete ${quiz.title}`}
                       >
-                        <Trash2 size={16} aria-hidden="true" />
+                        <Trash2 size={15} aria-hidden="true" /> Delete
                       </button>
                     </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
 
         {tab === 'taken' &&
@@ -286,65 +309,69 @@ export default function Dashboard() {
               title="No played quizzes yet"
               description="Join a quiz with a code and your scores will appear here automatically."
               action={
-                <Link to="/quiz/join" className="btn-primary">
+                <Link to="/quiz/join" className="btn btn-primary">
                   <Trophy size={18} aria-hidden="true" /> Join a quiz
                 </Link>
               }
             />
           ) : (
-            <div className="grid gap-4">
-              <div className="surface-soft grid grid-cols-2 gap-4 p-4 sm:grid-cols-3">
-                <div>
-                  <p className="text-xs uppercase tracking-wider text-slate-500">Attempts</p>
-                  <p className="text-xl font-bold text-white">{stats.attempts}</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-wider text-slate-500">Average score</p>
-                  <p className="text-xl font-bold text-white">{stats.average}%</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-wider text-slate-500">Best score</p>
-                  <p className="text-xl font-bold text-white">{stats.best}%</p>
-                </div>
+            <div className="border-2 border-ink bg-white">
+              <div className="flex flex-wrap items-baseline justify-between gap-3 border-b-2 border-ink bg-ink px-4 py-2.5 text-white">
+                <span className="font-display text-[11px] font-bold uppercase tracking-[0.16em]">Played quizzes</span>
+                <span className="font-display text-[11px] font-bold uppercase tracking-[0.16em] text-signal-yellow">
+                  {stats.attempts} attempts / {stats.average}% average
+                </span>
               </div>
 
-              <ul className="grid gap-3">
-                {results.map((result) => (
-                  <li key={result.id} className="surface flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <CheckCircle2
-                          size={16}
-                          className={result.percentage >= 60 ? 'text-emerald-300' : 'text-secondary-300'}
-                          aria-hidden="true"
-                        />
-                        <h2 className="truncate font-semibold text-white">{result.quiz?.title || 'Quiz'}</h2>
-                        <span className="badge border border-white/10 bg-white/5 text-slate-300">
-                          {result.quiz?.category}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-sm text-slate-400">
-                        {formatDate(result.completed_at)} · {result.correct_answers}/{result.total_questions} correct ·{' '}
-                        {formatDuration(result.time_taken)}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-2xl font-extrabold text-white">{result.percentage}%</p>
-                        <p className="text-xs text-slate-500">
-                          {result.score}/{result.max_score} points
-                        </p>
-                      </div>
-                      <Link to={`/quiz/play/${result.quiz?.code}`} className="btn-secondary">
-                        Play again
-                      </Link>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <Link to="/my-results" className="link justify-self-start text-sm">
-                See full result history →
-              </Link>
+              <div className="overflow-x-auto">
+                <table className="data-table min-w-[640px]">
+                  <caption className="sr-only">Quizzes you have played, newest first</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Quiz</th>
+                      <th scope="col">Completed</th>
+                      <th scope="col">Correct</th>
+                      <th scope="col">Time</th>
+                      <th scope="col">Score</th>
+                      <th scope="col">
+                        <span className="sr-only">Actions</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {results.map((result) => (
+                      <tr key={result.id}>
+                        <td>
+                          <span className="block font-semibold text-ink">{result.quiz?.title || 'Quiz'}</span>
+                          <span className="text-xs text-ink-600">{result.quiz?.category}</span>
+                        </td>
+                        <td className="whitespace-nowrap text-ink-600">{formatDate(result.completed_at)}</td>
+                        <td className="tabular-nums">
+                          {result.correct_answers}/{result.total_questions}
+                        </td>
+                        <td className="whitespace-nowrap tabular-nums">{formatDuration(result.time_taken)}</td>
+                        <td>
+                          <span className={`num text-2xl ${scoreTone(result.percentage)}`}>{result.percentage}%</span>
+                          <span className="block text-xs text-ink-600">
+                            {result.score}/{result.max_score} pts
+                          </span>
+                        </td>
+                        <td className="text-right">
+                          <Link to={`/quiz/play/${result.quiz?.code}`} className="btn btn-secondary btn-sm">
+                            Play again
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="border-t-2 border-ink px-4 py-3">
+                <Link to="/my-results" className="link text-sm">
+                  See full result history
+                </Link>
+              </div>
             </div>
           ))}
       </section>

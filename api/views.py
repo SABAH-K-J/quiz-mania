@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import Q
-from rest_framework import permissions, status, viewsets
+from rest_framework import exceptions, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -196,20 +196,20 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         quiz_id = self.request.data.get("quiz_id")
         if not quiz_id:
-            raise permissions.PermissionDenied("quiz_id is required.")
+            raise exceptions.PermissionDenied("quiz_id is required.")
         quiz = Quiz.objects.filter(id=quiz_id, host=self.request.user).first()
         if not quiz:
-            raise permissions.PermissionDenied("You can only add questions to your own quizzes.")
+            raise exceptions.PermissionDenied("You can only add questions to your own quizzes.")
         serializer.save(quiz=quiz)
 
     def perform_update(self, serializer):
         if serializer.instance.quiz.host != self.request.user:
-            raise permissions.PermissionDenied("You can only edit questions in your own quizzes.")
+            raise exceptions.PermissionDenied("You can only edit questions in your own quizzes.")
         serializer.save()
 
     def perform_destroy(self, instance):
         if instance.quiz.host != self.request.user:
-            raise permissions.PermissionDenied("You can only delete questions from your own quizzes.")
+            raise exceptions.PermissionDenied("You can only delete questions from your own quizzes.")
         instance.delete()
 
 
