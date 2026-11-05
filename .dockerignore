@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Django
+db.sqlite3
+*.sqlite3
+*.log
+staticfiles/
+media/
+.env
+.env.*
+!.env.example
+
+# Tests / coverage
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / frontend
+client/node_modules/
+client/dist/
+client/.vite/
+client/.env
+client/.env.*
+!client/.env.example
+
+# Editors / OS
+.git/
+.gitignore
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Docs and local artifacts
+README.local.md
+PRODUCT.md
+CONTRIBUTING.md
+LICENSE

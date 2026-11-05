@@ -1,267 +1,209 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Trophy, Clock, Calendar, TrendingUp, Award, Target } from 'lucide-react';
-import { resultAPI } from '../services/api';
+import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { BarChart3, Calendar, Clock3, Filter, ListChecks, Target, Trophy, TrendingUp } from 'lucide-react'
+import { getErrorMessage, resultAPI } from '../services/api'
+import useSEO from '../hooks/useSEO'
+import { Alert, EmptyState, PageHeader, Spinner, StatCard } from '../components/ui'
 
-const MyResults = () => {
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filterCategory, setFilterCategory] = useState('all');
+function asList(data) {
+  if (Array.isArray(data)) return data
+  return data?.results || []
+}
+
+function formatDate(value) {
+  if (!value) return '—'
+  return new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function formatDuration(seconds) {
+  if (!seconds && seconds !== 0) return '—'
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return mins > 0 ? `${mins}m ${secs.toString().padStart(2, '0')}s` : `${secs}s`
+}
+
+function scoreTone(percentage) {
+  if (percentage >= 80) return 'bg-emerald-400'
+  if (percentage >= 60) return 'bg-primary-400'
+  if (percentage >= 40) return 'bg-secondary-400'
+  return 'bg-rose-400'
+}
+
+export default function MyResults() {
+  useSEO('/my-results')
+
+  const [results, setResults] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [category, setCategory] = useState('all')
 
   useEffect(() => {
-    fetchResults();
-  }, []);
+    let active = true
 
-  const fetchResults = async () => {
-    try {
-      const response = await resultAPI.list();
-      // Handle paginated response - data is in .results property
-      const resultsData = Array.isArray(response.data) ? response.data : (response.data?.results || []);
-      setResults(resultsData);
-    } catch (error) {
-      console.error('Error fetching results:', error);
-      setResults([]); // Set empty array on error
-    } finally {
-      setLoading(false);
+    async function load() {
+      setLoading(true)
+      setError('')
+      try {
+        const response = await resultAPI.list()
+        if (active) setResults(asList(response.data))
+      } catch (loadError) {
+        if (active) setError(getErrorMessage(loadError, 'We could not load your results.'))
+      } finally {
+        if (active) setLoading(false)
+      }
     }
-  };
 
-  const categories = ['all', ...new Set(results.map((r) => r.quiz.category))];
+    load()
+    return () => {
+      active = false
+    }
+  }, [])
 
-  const filteredResults = filterCategory === 'all'
-    ? results
-    : results.filter((r) => r.quiz.category === filterCategory);
+  const categories = useMemo(
+    () => ['all', ...new Set(results.map((result) => result.quiz?.category).filter(Boolean))],
+    [results],
+  )
 
-  const stats = {
-    totalQuizzes: results.length,
-    averageScore: results.length > 0
-      ? (results.reduce((sum, r) => sum + r.percentage, 0) / results.length).toFixed(1)
-      : 0,
-    bestScore: results.length > 0 ? Math.max(...results.map((r) => r.percentage)) : 0,
-    totalPoints: results.reduce((sum, r) => sum + r.score, 0),
-    perfectScores: results.filter((r) => r.percentage === 100).length,
-  };
+  const filtered = useMemo(
+    () => (category === 'all' ? results : results.filter((result) => result.quiz?.category === category)),
+    [results, category],
+  )
 
-  const getGradeEmoji = (percentage) => {
-    if (percentage >= 90) return '🏆';
-    if (percentage >= 80) return '🌟';
-    if (percentage >= 70) return '👍';
-    if (percentage >= 60) return '✅';
-    return '📚';
-  };
+  const stats = useMemo(() => {
+    if (results.length === 0) return { attempts: 0, average: 0, best: 0, quizzes: 0 }
+    const average = Math.round(results.reduce((sum, result) => sum + Number(result.percentage || 0), 0) / results.length)
+    return {
+      attempts: results.length,
+      average,
+      best: Math.max(...results.map((result) => Number(result.percentage || 0))),
+      quizzes: new Set(results.map((result) => result.quiz?.id)).size,
+    }
+  }, [results])
 
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="flex justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <Spinner fullPage label="Loading your results…" />
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">My Results</h1>
-          <p className="text-purple-100">Track your performance and progress</p>
+    <main className="container-page animate-fade-in py-10 sm:py-14">
+      <PageHeader
+        eyebrow="Your history"
+        title="My results"
+        description="Every quiz you have played, with scores, accuracy and time."
+        actions={
+          <Link to="/quiz/join" className="btn-primary">
+            <Trophy size={18} aria-hidden="true" /> Play another quiz
+          </Link>
+        }
+      />
+
+      {error && (
+        <Alert className="mb-6" tone="error">
+          {error}
+        </Alert>
+      )}
+
+      <section aria-label="Result stats" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard icon={ListChecks} label="Attempts" value={stats.attempts} />
+        <StatCard icon={TrendingUp} label="Average score" value={`${stats.average}%`} accent="text-accent-teal" />
+        <StatCard icon={Trophy} label="Best score" value={`${stats.best}%`} accent="text-secondary-300" />
+        <StatCard icon={BarChart3} label="Unique quizzes" value={stats.quizzes} accent="text-primary-300" />
+      </section>
+
+      {results.length === 0 ? (
+        <div className="mt-8">
+          <EmptyState
+            icon={Target}
+            title="No results yet"
+            description="Once you play a quiz, your score and answer breakdown will appear here."
+            action={
+              <Link to="/quiz/join" className="btn-primary">
+                <Trophy size={18} aria-hidden="true" /> Join your first quiz
+              </Link>
+            }
+          />
         </div>
+      ) : (
+        <>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-slate-400">
+              Showing {filtered.length} of {results.length} attempts
+            </p>
 
-        {results.length === 0 ? (
-          <div className="card text-center py-16">
-            <Trophy size={64} className="mx-auto text-gray-400 mb-4" />
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">No Results Yet</h2>
-            <p className="text-gray-600 mb-6">Start taking quizzes to see your results here!</p>
-            <Link to="/quiz/join" className="btn-primary inline-block">
-              Join a Quiz
-            </Link>
+            <label className="inline-flex items-center gap-2 text-sm text-slate-400">
+              <Filter size={16} aria-hidden="true" />
+              <span className="sr-only">Filter by category</span>
+              <select
+                className="input-field min-h-[44px] w-auto py-2"
+                value={category}
+                onChange={(event) => setCategory(event.target.value)}
+              >
+                {categories.map((item) => (
+                  <option key={item} value={item}>
+                    {item === 'all' ? 'All categories' : item}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
-        ) : (
-          <>
-            {/* Statistics Overview */}
-            <div className="grid md:grid-cols-5 gap-4 mb-8">
-              <div className="card text-center">
-                <div className="flex justify-center mb-2">
-                  <Target size={28} className="text-primary-600" />
-                </div>
-                <div className="text-2xl font-bold text-gray-800">{stats.totalQuizzes}</div>
-                <div className="text-sm text-gray-600">Quizzes Taken</div>
-              </div>
 
-              <div className="card text-center">
-                <div className="flex justify-center mb-2">
-                  <TrendingUp size={28} className="text-blue-600" />
-                </div>
-                <div className="text-2xl font-bold text-gray-800">{stats.averageScore}%</div>
-                <div className="text-sm text-gray-600">Average Score</div>
-              </div>
-
-              <div className="card text-center">
-                <div className="flex justify-center mb-2">
-                  <Trophy size={28} className="text-yellow-600" />
-                </div>
-                <div className="text-2xl font-bold text-gray-800">{stats.bestScore}%</div>
-                <div className="text-sm text-gray-600">Best Score</div>
-              </div>
-
-              <div className="card text-center">
-                <div className="flex justify-center mb-2">
-                  <Award size={28} className="text-green-600" />
-                </div>
-                <div className="text-2xl font-bold text-gray-800">{stats.perfectScores}</div>
-                <div className="text-sm text-gray-600">Perfect Scores</div>
-              </div>
-
-              <div className="card text-center">
-                <div className="flex justify-center mb-2">
-                  <span className="text-2xl">🎯</span>
-                </div>
-                <div className="text-2xl font-bold text-gray-800">{stats.totalPoints}</div>
-                <div className="text-sm text-gray-600">Total Points</div>
-              </div>
-            </div>
-
-            {/* Filter */}
-            <div className="card mb-6">
-              <div className="flex items-center space-x-4">
-                <span className="text-gray-700 font-semibold">Filter by Category:</span>
-                <div className="flex flex-wrap gap-2">
-                  {categories.map((category) => (
-                    <button
-                      key={category}
-                      onClick={() => setFilterCategory(category)}
-                      className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                        filterCategory === category
-                          ? 'bg-primary-600 text-white'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
-                    >
-                      {category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Results List */}
-            <div className="space-y-4">
-              {filteredResults.map((result) => {
-                const percentageColor =
-                  result.percentage >= 80
-                    ? 'text-green-600'
-                    : result.percentage >= 60
-                    ? 'text-yellow-600'
-                    : 'text-red-600';
-
-                return (
-                  <div key={result.id} className="card hover:shadow-xl transition-shadow">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <span className="text-3xl">{getGradeEmoji(result.percentage)}</span>
-                          <div>
-                            <h3 className="text-xl font-bold text-gray-800">{result.quiz.title}</h3>
-                            <span className="text-sm text-gray-500">
-                              {result.quiz.category.charAt(0).toUpperCase() + result.quiz.category.slice(1)}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                          <div className="flex items-center space-x-2 text-gray-700">
-                            <Trophy size={18} className="text-gray-500" />
-                            <div>
-                              <div className="text-sm text-gray-600">Score</div>
-                              <div className="font-semibold">
-                                {result.score}/{result.total_questions}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center space-x-2 text-gray-700">
-                            <Target size={18} className="text-gray-500" />
-                            <div>
-                              <div className="text-sm text-gray-600">Accuracy</div>
-                              <div className={`font-semibold ${percentageColor}`}>
-                                {result.percentage}%
-                              </div>
-                            </div>
-                          </div>
-
-                          {result.time_taken && (
-                            <div className="flex items-center space-x-2 text-gray-700">
-                              <Clock size={18} className="text-gray-500" />
-                              <div>
-                                <div className="text-sm text-gray-600">Time</div>
-                                <div className="font-semibold">
-                                  {Math.floor(result.time_taken / 60)}m {result.time_taken % 60}s
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="flex items-center space-x-2 text-gray-700">
-                            <Calendar size={18} className="text-gray-500" />
-                            <div>
-                              <div className="text-sm text-gray-600">Completed</div>
-                              <div className="font-semibold text-sm">
-                                {new Date(result.completed_at).toLocaleDateString()}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+          <ul className="mt-4 grid gap-3">
+            {filtered.map((result) => {
+              const percentage = Number(result.percentage || 0)
+              return (
+                <li key={result.id} className="surface p-5">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="truncate text-lg font-bold text-white">{result.quiz?.title || 'Quiz'}</h2>
+                        <span className="badge border border-white/10 bg-white/5 text-slate-300">
+                          {result.quiz?.category || 'general'}
+                        </span>
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
+                        <span className="inline-flex items-center gap-1.5">
+                          <Calendar size={13} aria-hidden="true" /> {formatDate(result.completed_at)}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Target size={13} aria-hidden="true" /> {result.correct_answers}/{result.total_questions} correct
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Clock3 size={13} aria-hidden="true" /> {formatDuration(result.time_taken)}
+                        </span>
+                        <span className="font-mono text-[11px] text-slate-500">CODE {result.quiz?.code}</span>
                       </div>
 
-                      <div className="text-right ml-4">
-                        <div className={`text-4xl font-bold ${percentageColor}`}>
-                          {result.percentage}%
-                        </div>
-                        {result.percentage === 100 && (
-                          <div className="text-xs text-green-600 font-semibold mt-1">PERFECT!</div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Performance Chart - Simple visual representation */}
-            <div className="card mt-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Recent Performance</h2>
-              <div className="flex items-end space-x-2 h-48">
-                {filteredResults.slice(0, 10).reverse().map((result, index) => {
-                  const height = result.percentage;
-                  const color =
-                    result.percentage >= 80
-                      ? 'bg-green-500'
-                      : result.percentage >= 60
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500';
-
-                  return (
-                    <div key={index} className="flex-1 flex flex-col items-center">
-                      <div className="w-full relative" style={{ height: `${height}%` }}>
+                      <div className="mt-3 h-1.5 w-full max-w-md overflow-hidden rounded-full bg-white/10">
                         <div
-                          className={`${color} w-full absolute bottom-0 rounded-t-lg transition-all hover:opacity-80 cursor-pointer`}
-                          style={{ height: '100%' }}
-                          title={`${result.quiz.title}: ${result.percentage}%`}
+                          className={`h-full rounded-full ${scoreTone(percentage)}`}
+                          style={{ width: `${Math.min(100, percentage)}%` }}
                         />
                       </div>
-                      <div className="text-xs text-gray-600 mt-2 text-center">
-                        {result.percentage}%
-                      </div>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-};
 
-export default MyResults;
+                    <div className="flex items-center gap-4 sm:text-right">
+                      <div>
+                        <p className="text-2xl font-extrabold text-white">{percentage}%</p>
+                        <p className="text-xs text-slate-500">
+                          {result.score}/{result.max_score} points
+                        </p>
+                      </div>
+                      <Link
+                        to={`/quiz/play/${result.quiz?.code}`}
+                        className="btn-secondary whitespace-nowrap"
+                      >
+                        Play again
+                      </Link>
+                    </div>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+
+          {filtered.length === 0 && (
+            <p className="mt-6 text-center text-sm text-slate-400">No attempts in this category yet.</p>
+          )}
+        </>
+      )}
+    </main>
+  )
+}

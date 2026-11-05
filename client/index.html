@@ -2,12 +2,96 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>client</title>
+    <meta name="theme-color" content="#0a0614" />
+    <meta name="color-scheme" content="dark" />
+
+    <title>Quiz Mania — Create, share and play free quizzes</title>
+    <meta
+      name="description"
+      content="Quiz Mania is a free public quiz platform. Build a quiz in minutes, share an 8-character code, and let anyone play and get scored instantly."
+    />
+    <meta
+      name="keywords"
+      content="quiz, quiz maker, free quiz platform, trivia, classroom quiz, create a quiz, online quiz, quiz code"
+    />
+    <meta name="author" content="Quiz Mania" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="%SITE_URL%/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Quiz Mania" />
+    <meta property="og:title" content="Quiz Mania — Create, share and play free quizzes" />
+    <meta
+      property="og:description"
+      content="Build a quiz in minutes, share an 8-character code, and let anyone play and get scored instantly. Free, fast and mobile-friendly."
+    />
+    <meta property="og:url" content="%SITE_URL%/" />
+    <meta property="og:image" content="%SITE_URL%/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Quiz Mania — a playful quiz game interface" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Quiz Mania — Create, share and play free quizzes" />
+    <meta
+      name="twitter:description"
+      content="Build a quiz, share a code, and play instantly. Free public quiz platform."
+    />
+    <meta name="twitter:image" content="%SITE_URL%/og-image.png" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "%SITE_URL%/#website",
+            "url": "%SITE_URL%/",
+            "name": "Quiz Mania",
+            "description": "Free public quiz platform to create, share and play interactive quizzes.",
+            "inLanguage": "en"
+          },
+          {
+            "@type": "WebApplication",
+            "name": "Quiz Mania",
+            "url": "%SITE_URL%/",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Any",
+            "browserRequirements": "Requires JavaScript",
+            "isAccessibleForFree": true,
+            "description": "Create interactive quizzes, share an 8-character code and get scored instantly.",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <div style="max-width: 40rem; margin: 4rem auto; padding: 2rem; font-family: system-ui, sans-serif; color: #f8fafc">
+        <h1>Quiz Mania</h1>
+        <p>Quiz Mania needs JavaScript to create and play quizzes. Please enable JavaScript and reload the page.</p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

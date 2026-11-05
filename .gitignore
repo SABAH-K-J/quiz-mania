@@ -21,6 +21,7 @@ __pycache__/
 *.secret
 *.key
 .env.*
+!.env.example
 
 # OS Files
 .DS_Store
@@ -44,6 +45,16 @@ ENV/
 # Static & Media (optional — depends on setup)
 staticfiles/
 media/
+
+# Frontend
+client/node_modules/
+client/dist/
+client/.vite/
+client/.env
+client/.env.*
+!client/.env.example
+node_modules/
+dist/
 
 # Coverage reports
 htmlcov/

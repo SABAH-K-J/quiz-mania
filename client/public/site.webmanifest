@@ -1,0 +1,27 @@
+{
+  "name": "Quiz Mania — Create, share and play free quizzes",
+  "short_name": "Quiz Mania",
+  "description": "Free public quiz platform. Build a quiz, share an 8-character code, and let anyone play and get scored instantly.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0614",
+  "theme_color": "#0a0614",
+  "categories": ["education", "games", "entertainment"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

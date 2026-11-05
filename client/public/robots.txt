@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /quiz/create
+Disallow: /quiz/edit/
+Disallow: /quiz/results/
+Disallow: /my-results
+
+Sitemap: __SITE_URL__/sitemap.xml

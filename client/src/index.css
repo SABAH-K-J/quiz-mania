@@ -3,30 +3,147 @@
 @tailwind utilities;
 
 :root {
-  font-family: 'Poppins', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.6;
+  color-scheme: dark;
+  --radius: 1rem;
+  --ring: 251 191 36; /* amber-400 */
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+@layer base {
+  * {
+    @apply border-white/10;
+  }
+
+  html {
+    @apply scroll-smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-ink-950 font-body text-slate-100 antialiased;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(60rem 60rem at 12% -10%, rgba(124, 58, 237, 0.28), transparent 60%),
+      radial-gradient(45rem 45rem at 90% 0%, rgba(236, 72, 153, 0.14), transparent 55%),
+      radial-gradient(50rem 50rem at 50% 110%, rgba(20, 184, 166, 0.12), transparent 60%);
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-tight text-white;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  a {
+    @apply underline-offset-4;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: 3px;
+    border-radius: 0.35rem;
+  }
+
+  ::selection {
+    background: rgba(251, 191, 36, 0.35);
+    color: white;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .surface {
+    @apply rounded-3xl border border-white/10 bg-white/[0.055] shadow-card backdrop-blur-xl;
+  }
+
+  .surface-soft {
+    @apply rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-md;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary-200;
+  }
+
+  .btn {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition duration-200 disabled:cursor-not-allowed disabled:opacity-55;
+  }
+
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200;
+    @apply btn bg-gradient-to-r from-primary-500 via-primary-600 to-indigo-600 text-white shadow-glow hover:from-primary-400 hover:via-primary-500 hover:to-indigo-500 hover:shadow-[0_18px_45px_-16px_rgba(124,58,237,0.9)] active:translate-y-px;
   }
-  
+
   .btn-secondary {
-    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-6 rounded-lg transition-colors duration-200;
+    @apply btn border border-white/15 bg-white/[0.07] text-white hover:border-white/25 hover:bg-white/[0.12];
   }
-  
-  .card {
-    @apply bg-white rounded-xl shadow-lg p-6;
+
+  .btn-ghost {
+    @apply btn text-slate-300 hover:bg-white/[0.07] hover:text-white;
   }
-  
+
+  .btn-danger {
+    @apply btn border border-rose-400/25 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20;
+  }
+
   .input-field {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply min-h-[46px] w-full rounded-xl border border-white/10 bg-ink-900/80 px-4 py-2.5 text-[15px] text-white placeholder:text-slate-500 transition focus:border-primary-400/70 focus:outline-none focus:ring-2 focus:ring-primary-400/40;
+  }
+
+  .label {
+    @apply mb-2 block text-sm font-semibold text-slate-200;
+  }
+
+  .hint {
+    @apply mt-1.5 text-xs text-slate-400;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+
+  .link {
+    @apply font-semibold text-primary-300 underline-offset-4 transition hover:text-primary-200 hover:underline;
+  }
+
+  .section-title {
+    @apply text-3xl font-bold sm:text-4xl;
+  }
+
+  .card-grid {
+    @apply grid gap-5 md:grid-cols-2 lg:grid-cols-3;
+  }
+}
+
+@layer utilities {
+  .glass-highlight {
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent 45%);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
