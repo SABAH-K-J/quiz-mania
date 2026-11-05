@@ -12,7 +12,15 @@ Product truth lives in [`PRODUCT.md`](./PRODUCT.md). The Django service is API-o
 
 ## Features
 
+<<<<<<< HEAD
 **For quiz creators**
+=======
+### Technical Features
+- 🔐 **JWT Authentication** - Secure token-based auth with refresh tokens
+- 🌐 **RESTful API** - Clean, well-documented API endpoints
+- 🎨 **Modern UI** - Built with Tailwind CSS
+- 🐳 **Docker Ready** - Containerized deployment setup 
+>>>>>>> 4100456dc5f2f458ae21d3710b0da124db1dcb61
 
 - Build multiple-choice, true/false and multi-select questions (2–6 options)
 - Per-question points and an optional explanation
