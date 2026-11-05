@@ -67,3 +67,9 @@ coverage.xml
 # Other
 *.bak
 *.orig
+
+# AI / agent artifacts
+.impeccable/
+.opencode/
+PRODUCT.md
+DESIGN.md

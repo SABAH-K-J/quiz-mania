@@ -2,30 +2,23 @@
 
 A free public quiz platform. Build a quiz in minutes, share one 8-character code, and let anyone play and get scored instantly.
 
+- **Live demo:** https://quiz-mania-chi.vercel.app/
 - **Frontend:** React 19 + Vite + Tailwind CSS → deploy free on **Vercel**
 - **Backend:** Django 5 + Django REST Framework + SimpleJWT → deploy free on **Render** (or Koyeb)
 - **Database:** SQLite locally, **free Postgres** in production (Neon or Supabase)
 
-Product truth lives in [`PRODUCT.md`](./PRODUCT.md). The Django service is API-only; the React SPA is the product.
+The Django service is API-only; the React SPA is the product.
 
 ---
 
 ## Features
 
-<<<<<<< HEAD
 **For quiz creators**
-=======
-### Technical Features
-- 🔐 **JWT Authentication** - Secure token-based auth with refresh tokens
-- 🌐 **RESTful API** - Clean, well-documented API endpoints
-- 🎨 **Modern UI** - Built with Tailwind CSS
-- 🐳 **Docker Ready** - Containerized deployment setup 
->>>>>>> 4100456dc5f2f458ae21d3710b0da124db1dcb61
 
 - Build multiple-choice, true/false and multi-select questions (2–6 options)
 - Per-question points and an optional explanation
 - Optional time limit, category, retakes, and answer reveal
-- Draft-first workflow: nothing is public until you explicitly publish
+- Draft-first workflow: nothing is public until the quiz is explicitly published
 - Dashboard with attempts, average score, top score and full attempt history
 - Share by code or direct link
 
@@ -183,10 +176,10 @@ Frontend on `http://localhost`, backend on `http://localhost:8000`.
 2. In Render, choose **New → Blueprint** and select the repo.
 3. Render reads [`render.yaml`](./render.yaml) and creates the `quiz-mania-api` web service on the free plan.
 4. Fill in the values Render marks as required:
-   - `DATABASE_URL` → your Neon connection string
-   - `DJANGO_CORS_ALLOWED_ORIGINS` → your Vercel URL (you can add this after Step 3)
+   - `DATABASE_URL` → the Neon connection string
+   - `DJANGO_CORS_ALLOWED_ORIGINS` → the Vercel URL (this can be added after Step 3)
    - `DJANGO_CSRF_TRUSTED_ORIGINS` → `https://YOUR-API.onrender.com,https://YOUR-APP.vercel.app`
-   - `SITE_URL` → your Vercel URL
+   - `SITE_URL` → the Vercel URL
    - `DJANGO_SECRET_KEY` is generated automatically.
 5. Deploy. When it finishes, open:
    `https://YOUR-API.onrender.com/health/` → should return `{"status": "ok", "database": "ok"}`.
@@ -214,7 +207,7 @@ python manage.py createsuperuser
 - Render free web services sleep after ~15 minutes of inactivity. The next request takes ~30–60 seconds to wake.
 - Optional: add a free [UptimeRobot](https://uptimerobot.com) HTTP monitor for `https://YOUR-API.onrender.com/health/` every 5 minutes to keep it warm.
 - Do not use SQLite in production — the filesystem is ephemeral.
-- Uploaded media is ephemeral too. The current UI does not upload images; if you enable that, add S3/Cloudinary storage.
+- Uploaded media is ephemeral too. The current UI does not upload images; if that changes, add S3/Cloudinary storage.
 
 ### Step 3 — Deploy the frontend to Vercel
 
@@ -230,21 +223,21 @@ python manage.py createsuperuser
 
 ### Step 4 — Connect the two
 
-1. Copy your Vercel production URL.
+1. Copy the Vercel production URL.
 2. In Render → Environment, set:
    - `DJANGO_CORS_ALLOWED_ORIGINS=https://YOUR-APP.vercel.app`
    - `DJANGO_CSRF_TRUSTED_ORIGINS=https://YOUR-API.onrender.com,https://YOUR-APP.vercel.app`
    - `SITE_URL=https://YOUR-APP.vercel.app`
 3. Redeploy the Render service (or wait for the env change to restart it).
-4. On Vercel, confirm `VITE_API_URL` and `VITE_SITE_URL`, then redeploy if you changed them.
+4. On Vercel, confirm `VITE_API_URL` and `VITE_SITE_URL`, then redeploy if they changed.
 
 ### Other free-ish backend hosts
 
 | Host | Free tier | Notes |
 | --- | --- | --- |
 | **Render** | Free web service, spins down | Recommended. Easiest with `render.yaml`. |
-| **Koyeb** | One free web service, scales to zero | Use the `Dockerfile`; set `PORT` automatically. |
-| **PythonAnywhere** | Free account | WSGI only, no custom domain, manual reload. Use the `Procfile` command adapted to their WSGI setup. |
+| **Koyeb** | One free web service, scales to zero | Use the `Dockerfile`; `PORT` is set automatically. |
+| **PythonAnywhere** | Free account | WSGI only, no custom domain, manual reload. Adapt the `Procfile` command to their WSGI setup. |
 | **Fly.io** | No true free tier | Paid, but cheap. Use the `Dockerfile`. |
 
 ### Push to GitHub
@@ -269,7 +262,7 @@ All endpoints are under `/api/`.
 | `POST` | `/auth/logout/` | Public | Blacklist a refresh token |
 | `GET` | `/users/me/` | Required | Current user |
 | `GET` | `/quizzes/` | Public | Published quizzes; authenticated users also see their own |
-| `GET` | `/quizzes/my_quizzes/` | Required | Quizzes you created |
+| `GET` | `/quizzes/my_quizzes/` | Required | Quizzes created by the current user |
 | `POST` | `/quizzes/` | Required | Create a draft |
 | `PATCH` | `/quizzes/{id}/` | Owner | Update quiz details |
 | `POST` | `/quizzes/{id}/publish/` | Owner | Validate and publish |
@@ -278,7 +271,7 @@ All endpoints are under `/api/`.
 | `GET` | `/questions/?quiz_id={id}` | Public/Owner | Questions (answers hidden for takers) |
 | `POST` | `/questions/` | Owner | Add a question |
 | `PATCH` / `DELETE` | `/questions/{id}/` | Owner | Edit/delete a question |
-| `GET` | `/results/` | Required | Your results |
+| `GET` | `/results/` | Required | Results for the current user |
 | `POST` | `/results/submit/` | Required | Submit answers and get a score |
 | `GET` | `/health/` | Public | Database + service health |
 
@@ -291,8 +284,8 @@ Interactive DRF docs are not enabled in production; use the endpoints above or t
 - [ ] `DJANGO_SECRET_KEY` is long, random and stored as a secret
 - [ ] `DJANGO_DEBUG=False`
 - [ ] `DATABASE_URL` points at Postgres (not SQLite)
-- [ ] `DJANGO_ALLOWED_HOSTS` includes your API host
-- [ ] `DJANGO_CORS_ALLOWED_ORIGINS` includes your Vercel production URL
+- [ ] `DJANGO_ALLOWED_HOSTS` includes the API host
+- [ ] `DJANGO_CORS_ALLOWED_ORIGINS` includes the Vercel production URL
 - [ ] `DJANGO_CSRF_TRUSTED_ORIGINS` includes both production origins
 - [ ] `VITE_API_URL` ends in `/api` and points at the API
 - [ ] `VITE_SITE_URL` matches the deployed frontend
